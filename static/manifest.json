@@ -1,0 +1,9 @@
+{
+  "name": "Simbio OS",
+  "short_name": "Simbio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#416656",
+  "orientation": "portrait"
+}

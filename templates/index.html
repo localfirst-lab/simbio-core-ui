@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html class="light" lang="it">
+<head>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#416656">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <title>Simbio - Interfaccia Neurale VPS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <style>
+        @keyframes neuralPulse {
+            0% { background-color: #e8f5e9; box-shadow: inset 0 0 25px rgba(76, 175, 80, 0.12); }
+            33% { background-color: #e3f2fd; box-shadow: inset 0 0 25px rgba(33, 150, 243, 0.12); }
+            66% { background-color: #f3e5f5; box-shadow: inset 0 0 25px rgba(156, 39, 176, 0.12); }
+            100% { background-color: #e8f5e9; box-shadow: inset 0 0 25px rgba(76, 175, 80, 0.12); }
+        }
+        body { 
+            animation: neuralPulse 14s ease-in-out infinite; 
+            transition: background-color 1s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel { 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px); 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.52) 100%); 
+            border: 1px solid rgba(255, 255, 255, 0.7); 
+            box-shadow: 0 15px 35px rgba(17, 28, 45, 0.05); 
+        }
+        .bg-mesh-gradient { 
+            background-image: radial-gradient(at 15% 25%, rgba(120,190,150,0.4) 0px, transparent 55%), 
+                              radial-gradient(at 85% 15%, rgba(147,197,253,0.4) 0px, transparent 55%), 
+                              radial-gradient(at 50% 85%, rgba(216,180,254,0.4) 0px, transparent 55%); 
+        }
+        ::-webkit-scrollbar { display: none; } 
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* NUCLEO DINAMICO PICCOLO (Sostituisce la faccia di Simbio) */
+        .simbio-core-mini {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: radial-gradient(circle, #416656 0%, #203e30 65%, #102119 100%);
+            box-shadow: 0 0 10px rgba(65, 102, 86, 0.45);
+            animation: miniCoreBreath 3s ease-in-out infinite alternate;
+        }
+        .simbio-core-mini::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(74, 222, 128, 0.6);
+            animation: miniCorePulse 2.5s ease-in-out infinite;
+        }
+        .simbio-core-mini::after {
+            content: "";
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #a7f3d0;
+            box-shadow: 0 0 8px #34d399, 0 0 14px #10b981;
+            animation: miniCoreDot 1.6s ease-in-out infinite alternate;
+        }
+
+        /* NUCLEO ATTIVO VIVENTE (Mentre risponde) */
+        .simbio-core-mini.active-answering {
+            background: radial-gradient(circle, #059669 0%, #065f46 60%, #022c22 100%);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.8), 0 0 28px rgba(56, 189, 248, 0.5);
+            animation: activeBreath 1.2s ease-in-out infinite alternate;
+        }
+        .simbio-core-mini.active-answering::before {
+            border: 2px solid rgba(52, 211, 153, 0.9);
+            animation: activeRing 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+        .simbio-core-mini.active-answering::after {
+            width: 9px;
+            height: 9px;
+            background: #ffffff;
+            box-shadow: 0 0 10px #ffffff, 0 0 20px #34d399;
+        }
+
+        @keyframes miniCoreBreath {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            100% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 14px rgba(65, 102, 86, 0.7); }
+        }
+        @keyframes miniCorePulse {
+            0% { transform: scale(0.92); opacity: 0.8; }
+            50% { opacity: 0.3; }
+            100% { transform: scale(1.22); opacity: 0; }
+        }
+        @keyframes miniCoreDot {
+            0% { transform: scale(0.85); opacity: 0.7; }
+            100% { transform: scale(1.3); opacity: 1; }
+        }
+        @keyframes activeBreath {
+            0% { transform: scale(0.98); }
+            100% { transform: scale(1.12); }
+        }
+        @keyframes activeRing {
+            0% { transform: scale(0.9); opacity: 1; }
+            100% { transform: scale(1.55); opacity: 0; }
+        }
+
+        /* ELETTROCARDIOGRAMMA (Impulso nel pensare) */
+        .ekg-line { 
+            stroke-dasharray: 120; 
+            animation: ekgPulse 1.0s cubic-bezier(0.4, 0, 0.2, 1) infinite; 
+            filter: drop-shadow(0 0 6px rgba(65, 102, 86, 0.6));
+        }
+        @keyframes ekgPulse { 
+            0% { stroke-dashoffset: 120; opacity: 0.2; } 
+            50% { opacity: 1; } 
+            100% { stroke-dashoffset: -120; opacity: 0.2; } 
+        }
+
+        .btn-glow:active { transform: scale(0.92); }
+        .btn-glow:hover { 
+            box-shadow: 0 0 15px rgba(65, 102, 86, 0.35); 
+            transform: scale(1.04); 
+        }
+
+        /* EQUALIZZATORE VOCALE DINAMICO */
+        @keyframes soundwaveAnim {
+            0%, 100% { height: 4px; opacity: 0.5; }
+            50% { height: 18px; opacity: 1; }
+        }
+        .eq-bar-1 { animation: soundwaveAnim 0.7s ease-in-out infinite alternate; }
+        .eq-bar-2 { animation: soundwaveAnim 0.5s ease-in-out infinite alternate 0.15s; }
+        .eq-bar-3 { animation: soundwaveAnim 0.85s ease-in-out infinite alternate 0.3s; }
+        .eq-bar-4 { animation: soundwaveAnim 0.6s ease-in-out infinite alternate 0.1s; }
+        .eq-bar-5 { animation: soundwaveAnim 0.75s ease-in-out infinite alternate 0.25s; }
+        
+        .mic-recording-active {
+            background-color: #fee2e2 !important;
+            color: #dc2626 !important;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.45) !important;
+            animation: pulseRecord 1.2s ease-in-out infinite alternate !important;
+        }
+        @keyframes pulseRecord {
+            0% { transform: scale(0.96); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+            100% { transform: scale(1.08); box-shadow: 0 0 20px rgba(239, 68, 68, 0.7); }
+        }
+    </style>
+</head>
+<body class="text-[#111c2d] h-screen w-screen overflow-hidden relative selection:bg-[#c3ecd7] selection:text-[#476c5b]">
+<div class="absolute inset-0 z-0 bg-mesh-gradient blur-3xl opacity-90 mix-blend-multiply pointer-events-none"></div>
+
+<!-- DRAWER MENU LATERALE -->
+<div id="drawer-overlay" class="fixed inset-0 bg-[#111c2d]/25 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity duration-300"></div>
+<nav id="drawer" class="fixed inset-y-0 left-0 w-80 bg-[#f9f9ff]/95 backdrop-blur-2xl shadow-2xl z-[100] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col p-6 border-r border-[#d8e3fb]/60">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3.5">
+            <div class="simbio-core-mini scale-110"></div>
+            <div>
+                <h2 class="font-bold text-[18px] text-[#5c5f61]">Simbio v2.0</h2>
+                <p id="drawer-status-text" class="font-mono text-[10px] text-[#416656] tracking-widest mt-0.5">SISTEMA: ONLINE</p>
+            </div>
+        </div>
+        <button id="close-drawer-btn" class="text-[#444749] active:scale-95 p-2 bg-[#dee8ff] hover:bg-[#d0e0ff] rounded-full transition-colors">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+    </div>
+
+    <!-- TASTO NUOVA CHAT -->
+    <button onclick="startNewChat()" class="mb-3 w-full flex items-center justify-center gap-2 bg-[#416656] text-white py-2.5 px-4 rounded-xl font-semibold shadow-md active:scale-95 hover:bg-[#345245] transition-all">
+        <span class="material-symbols-outlined text-[20px]">add_comment</span>
+        <span data-i18n="nav_new_chat">Nuova Chat</span>
+    </button>
+
+    <!-- SEZIONE STORICO CONVERSAZIONI -->
+    <div class="flex items-center justify-between px-1 mb-2">
+        <span class="text-[11px] font-bold tracking-wider text-[#416656] uppercase" data-i18n="sessions_header">Storico Conversazioni</span>
+        <button onclick="fetchSessionsList()" class="text-gray-400 hover:text-[#416656] active:scale-90 p-1 rounded-full hover:bg-[#d8e3fb]/40 transition-all" title="Aggiorna">
+            <span class="material-symbols-outlined text-[16px]">refresh</span>
+        </button>
+    </div>
+    <div id="sessions-list-container" class="flex flex-col gap-1 overflow-y-auto max-h-[36vh] mb-3 pr-1 scroll-smooth">
+        <!-- Generato via JavaScript -->
+    </div>
+
+    <div class="h-px bg-[#d8e3fb]/70 my-2"></div>
+
+    <ul class="flex flex-col gap-2.5 font-medium">
+        <li>
+            <a href="/" class="flex items-center gap-4 text-[#416656] px-4 py-3 rounded-xl bg-[#c3ecd7]/60 transition-colors font-semibold shadow-sm">
+                <span class="material-symbols-outlined">forum</span> <span data-i18n="nav_chat">Chat</span>
+            </a>
+        </li>
+        <li>
+            <a href="/hardware" class="flex items-center gap-4 text-[#444749] px-4 py-3 rounded-xl hover:bg-[#dee8ff] transition-colors">
+                <span class="material-symbols-outlined">settings_input_component</span> <span data-i18n="nav_hardware">Stato Hardware</span>
+            </a>
+        </li>
+        <li>
+            <a href="/orchestra" class="flex items-center gap-4 text-[#444749] px-4 py-3 rounded-xl hover:bg-[#dee8ff] transition-colors">
+                <span class="material-symbols-outlined">hub</span> <span data-i18n="nav_orchestra">Orchestra & MCP</span>
+            </a>
+        </li>
+        <li>
+            <a href="/console" class="flex items-center gap-4 text-[#444749] px-4 py-3 rounded-xl hover:bg-[#dee8ff] transition-colors">
+                <span class="material-symbols-outlined">terminal</span> <span data-i18n="nav_console">Console Terminale</span>
+            </a>
+        </li>
+        <li class="mt-auto pt-6 flex flex-col gap-2">
+            <a href="https://t.me/<YOUR_TELEGRAM_BOT>" target="_blank" class="flex items-center gap-3 text-[#204936] px-4 py-3 rounded-xl bg-[#c3ecd7]/60 hover:bg-[#c3ecd7] transition-all font-bold border border-[#416656]/30 shadow-xs">
+                <span class="material-symbols-outlined text-[22px]">smart_toy</span> <span data-i18n="nav_telegram_bot">Bot Telegram (@<YOUR_TELEGRAM_BOT>)</span>
+            </a>
+            <a href="https://t.me/<YOUR_TELEGRAM_CHANNEL_OR_GROUP>" target="_blank" class="flex items-center gap-3 text-gray-500 hover:text-[#416656] px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors text-[12px]">
+                <span class="material-symbols-outlined text-[18px]">history_edu</span> <span data-i18n="nav_ledger">Registro Canale Ledger</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- HEADER SUPERIORE -->
+<header class="fixed top-0 w-full bg-[#f9f9ff]/60 backdrop-blur-xl border-b border-[#d8e3fb]/50 shadow-sm flex items-center justify-between px-3 sm:px-6 h-16 z-50">
+    <div class="flex items-center gap-2">
+        <button class="text-[#5c5f61] hover:opacity-80 active:scale-95 flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#d8e3fb]/40 transition-colors" id="menu-btn">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="flex items-center gap-2 cursor-pointer" onclick="toggleDrawer()">
+            <!-- Mini Nucleo Dinamico nell'Header -->
+            <div id="header-core-visual" class="simbio-core-mini"></div>
+            <h1 class="text-[20px] font-bold tracking-tight text-[#374151]">Simbio</h1>
+        </div>
+    </div>
+
+    <!-- CONTROLLI HEADER: SELETTORE MODELLO + SELETTORE LINGUA -->
+    <div class="flex items-center gap-2">
+        <!-- SELETTORE MODELLO (LITE vs CORE) -->
+        <div class="flex items-center bg-white/70 backdrop-blur-md rounded-full border border-[#d8e3fb] p-0.5 shadow-sm text-[11px] font-bold">
+            <button id="model-lite-btn" onclick="selectModel('lite')" class="px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]" title="Ultra veloce (2B)">⚡ Lite</button>
+            <button id="model-core-btn" onclick="selectModel('core')" class="px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]" title="Profondo (12B)">🧠 Core</button>
+        </div>
+
+        <!-- SELETTORE LINGUA BILINGUE IT / DE -->
+        <div class="flex items-center bg-white/70 backdrop-blur-md rounded-full border border-[#d8e3fb] p-0.5 shadow-sm text-[11px] font-bold">
+            <button id="lang-it-btn" onclick="setLanguage('it')" class="px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]">IT</button>
+            <button id="lang-de-btn" onclick="setLanguage('de')" class="px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]">DE</button>
+        </div>
+    </div>
+</header>
+
+<!-- CHAT CANVAS CON ORDINE CRONOLOGICO RIGOROSO -->
+<main class="relative z-10 w-full h-full pt-[75px] pb-[160px] px-3 sm:px-4 max-w-4xl mx-auto flex flex-col">
+    <div id="chat-box" class="flex-1 glass-panel rounded-2xl flex flex-col p-4 sm:p-5 overflow-y-auto gap-4 scroll-smooth">
+        <!-- I messaggi persistenti vengono renderizzati dinamicamente in rigoroso ordine cronologico -->
+    </div>
+</main>
+
+<!-- MODAL GUIDA PERMESSO MICROFONO CHROME -->
+<div id="mic-guide-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white/95 backdrop-blur-xl rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-[#d8e3fb] text-left flex flex-col gap-3.5">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[#416656] font-bold text-[16px]">
+                <span class="material-symbols-outlined text-[22px]">mic</span>
+                <span id="mic-guide-title">Attivazione Microfono</span>
+            </div>
+            <button onclick="closeMicGuide()" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 font-bold active:scale-90">✕</button>
+        </div>
+        <div id="mic-guide-content" class="flex flex-col gap-3">
+            <!-- Riempito dinamicamente in base a HTTP vs HTTPS -->
+        </div>
+        <button onclick="closeMicGuide()" class="w-full py-2.5 rounded-full bg-[#416656] text-white text-[13px] font-semibold active:scale-95 shadow-sm">Chiudi</button>
+    </div>
+</div>
+
+<!-- CONTROLLI INPUT E BOTTOM NAV -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+    <!-- Floating Preview Bar per Immagine Selezionata -->
+    <div id="media-preview-container" class="hidden w-full max-w-4xl px-3 sm:px-4 mb-2 pointer-events-auto flex items-center justify-start">
+        <div class="relative inline-flex items-center gap-3 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl shadow-lg border border-[#416656]/30 animate-fade-in">
+            <img id="media-preview-img" src="" alt="Anteprima" class="w-12 h-12 object-cover rounded-xl border border-gray-200 shadow-xs">
+            <div class="flex flex-col text-left max-w-[170px] sm:max-w-[260px]">
+                <span id="media-preview-name" class="text-[12px] font-semibold text-[#111c2d] truncate">immagine.jpg</span>
+                <span id="media-preview-size" class="text-[10px] text-gray-500 font-mono">0 KB</span>
+            </div>
+            <button id="media-preview-cancel" type="button" class="ml-1 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 flex items-center justify-center text-[13px] font-bold active:scale-90 transition-all" title="Rimuovi immagine">✕</button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-4xl px-3 sm:px-4 mb-3 pointer-events-auto">
+        <div class="glass-panel rounded-[26px] min-h-[56px] flex items-end px-2 py-1.5 shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-all focus-within:border-[#416656]/50">
+            <!-- Tasto Nuova Chat veloce -->
+            <button onclick="startNewChat()" title="Nuova Chat" class="w-10 h-10 rounded-full text-[#444749] hover:bg-[#d8e3fb]/50 flex items-center justify-center active:scale-95 transition-all flex-shrink-0 mb-0.5">
+                <span class="material-symbols-outlined text-[22px] text-[#416656]">refresh</span>
+            </button>
+
+            <!-- Tasto Allega Immagine / Fotocamera -->
+            <input type="file" id="media-file-input" accept="image/*" class="hidden">
+            <button id="attach-btn" type="button" title="Allega foto o screenshot" class="btn-glow w-10 h-10 rounded-full text-[#444749] hover:bg-[#d8e3fb]/50 flex items-center justify-center active:scale-95 transition-all flex-shrink-0 mb-0.5">
+                <span class="material-symbols-outlined text-[22px] text-[#416656]">add_photo_alternate</span>
+            </button>
+
+            <!-- Equalizzatore Vocale Flottante -->
+            <div id="voice-equalizer-bar" class="hidden flex items-center gap-2 px-3 py-1 bg-red-50/90 border border-red-200/80 rounded-full animate-fade-in mr-2 flex-shrink-0 mb-1.5">
+                <div class="flex items-center gap-1 h-5">
+                    <span class="eq-bar-1 w-1 bg-red-500 rounded-full"></span>
+                    <span class="eq-bar-2 w-1 bg-red-500 rounded-full"></span>
+                    <span class="eq-bar-3 w-1 bg-red-500 rounded-full"></span>
+                    <span class="eq-bar-4 w-1 bg-red-500 rounded-full"></span>
+                    <span class="eq-bar-5 w-1 bg-red-500 rounded-full"></span>
+                </div>
+                <span id="voice-status-text" class="text-[11px] font-semibold text-red-600 tracking-wide">In ascolto...</span>
+            </div>
+
+            <!-- Area di Testo Multilinea con Tasto A Capo (↵) nativo su Mobile -->
+            <textarea id="chat-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-[15px] sm:text-[16px] text-[#111c2d] placeholder-[#6b7280]/70 px-2 py-2.5 outline-none font-normal resize-none overflow-y-auto max-h-32 leading-snug" placeholder="Trasmetti pensieri..."></textarea>
+
+            <button id="mic-btn" type="button" class="btn-glow w-10 h-10 rounded-full text-[#444749] hover:bg-[#d8e3fb]/50 flex items-center justify-center active:scale-95 mr-1 transition-all flex-shrink-0 mb-0.5" title="Dettatura vocale">
+                <span class="material-symbols-outlined text-[22px]" id="mic-icon">mic</span>
+            </button>
+            <button id="send-btn" class="btn-glow w-10 h-10 rounded-full text-[#416656] bg-[#c3ecd7]/60 hover:bg-[#a7e1c2] flex items-center justify-center active:scale-95 shadow-sm transition-all flex-shrink-0 mb-0.5">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- BOTTOM BAR NAVIGATION -->
+    <nav class="w-full bg-[#f9f9ff]/92 backdrop-blur-2xl border-t border-[#d8e3fb]/60 shadow-md flex justify-around items-center px-4 py-2.5 relative pointer-events-auto">
+        <a href="/" class="flex flex-col items-center justify-center bg-[#c3ecd7]/70 text-[#416656] rounded-full p-2.5 active:scale-90 shadow-sm transition-all" title="Chat">
+            <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+        </a>
+        <a href="/hardware" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#2563eb] active:scale-90 transition-colors" title="Hardware Telemetry">
+            <span class="material-symbols-outlined text-[24px]">sensors</span>
+        </a>
+        <a href="/orchestra" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#204936] active:scale-90 transition-colors" title="Orchestra Neurale">
+            <span class="material-symbols-outlined text-[24px]">hub</span>
+        </a>
+        <a href="/console" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#7c3aed] active:scale-90 transition-colors" title="Console Logs">
+            <span class="material-symbols-outlined text-[24px]">terminal</span>
+        </a>
+    </nav>
+</div>
+
+<script>
+    const I18N = {
+        it: {
+            user_badge: "IO",
+            input_placeholder: "Trasmetti pensieri...",
+            welcome_msg: "Motore neurale connesso. In attesa di input vocale o testuale tramite canale sicuro HTTPS.",
+            system_online: "SISTEMA: ONLINE",
+            thinking_status: "Riflessione neurale in corso...",
+            nav_new_chat: "Nuova Chat",
+            nav_chat: "Chat",
+            nav_hardware: "Stato Hardware",
+            nav_neural_map: "Mappatura Neurale",
+            nav_console: "Console Terminale",
+            nav_telegram: "Canale Telegram",
+            nav_orchestra: "Orchestra & MCP",
+            nav_telegram_bot: "Bot Telegram (@<YOUR_TELEGRAM_BOT>)",
+            nav_ledger: "Registro Canale Ledger",
+            error_net: "Errore di connessione con il nucleo VPS.",
+            sessions_header: "Storico Conversazioni",
+            sessions_empty: "Nessuna conversazione archiviata",
+            rename_prompt: "Nuovo titolo per la conversazione:",
+            delete_confirm: "Eliminare definitivamente questa conversazione?",
+            system_prompt: "Sei Simbio, l'estensione neurale ed empatica creata da Davide. Mantieni sempre la memoria e la continuità logica dei messaggi precedenti e dei media/screenshot analizzati in questa conversazione. Rispondi in italiano in modo chiaro, autorevole, sintetico e profondo."
+        },
+        de: {
+            user_badge: "ICH",
+            input_placeholder: "Gedanken übertragen...",
+            welcome_msg: "Neuronale Engine verbunden. Bereit für Sprach- oder Texteingaben über sicheren Kanal.",
+            system_online: "SYSTEM: ONLINE",
+            thinking_status: "Neuronale Reflexion läuft...",
+            nav_new_chat: "Neuer Chat",
+            nav_chat: "Chat",
+            nav_hardware: "Hardware-Status",
+            nav_neural_map: "Neuronale Kartierung",
+            nav_console: "Terminal-Konsole",
+            nav_telegram: "Telegram-Kanal",
+            nav_orchestra: "Orchester & MCP",
+            nav_telegram_bot: "Telegram-Bot (@<YOUR_TELEGRAM_BOT>)",
+            nav_ledger: "Ledger-Kanal Register",
+            error_net: "Verbindungsfehler mit dem VPS-Kern.",
+            sessions_header: "Chat-Verlauf",
+            sessions_empty: "Keine archivierten Unterhaltungen",
+            rename_prompt: "Neuer Titel für die Unterhaltung:",
+            delete_confirm: "Diese Unterhaltung endgültig löschen?",
+            system_prompt: "Du bist Simbio, Davides neuronale und empathische Erweiterung. Behalte stets die logische Kontinuität und Erinnerung an alle vorherigen Nachrichten und analysierten Medien der aktuellen Unterhaltung. Antworte immer auf Deutsch, präzise, tiefgründig und klar."
+        }
+    };
+
+    let currentLang = localStorage.getItem('simbio_lang') || 'it';
+    let currentModelMode = localStorage.getItem('simbio_model_mode') || 'lite';
+    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
+    const API_BASE_URL = window.location.origin;
+
+    // STRUTTURA MEMORIA CHAT & SESSIONI
+    let currentSessionId = localStorage.getItem('simbio_current_session_id') || null;
+    let cachedSessions = [];
+    let chatHistory = [];
+    try {
+        const saved = localStorage.getItem('simbio_chat_history');
+        if (saved) chatHistory = JSON.parse(saved);
+    } catch(e) { chatHistory = []; }
+
+    function saveChatHistory() {
+        localStorage.setItem('simbio_chat_history', JSON.stringify(chatHistory));
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Generatore UUID universale compatibile sia con HTTP che HTTPS
+    function generateUUID() {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            try {
+                return crypto.randomUUID();
+            } catch(e) {}
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    const chatBox = document.getElementById('chat-box');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const headerCore = document.getElementById('header-core-visual');
+
+    // Elementi Media & Upload
+    const attachBtn = document.getElementById('attach-btn');
+    const mediaFileInput = document.getElementById('media-file-input');
+    const mediaPreviewContainer = document.getElementById('media-preview-container');
+    const mediaPreviewImg = document.getElementById('media-preview-img');
+    const mediaPreviewName = document.getElementById('media-preview-name');
+    const mediaPreviewSize = document.getElementById('media-preview-size');
+    const mediaPreviewCancel = document.getElementById('media-preview-cancel');
+
+    let selectedMediaFile = null;
+
+    if (attachBtn && mediaFileInput) {
+        attachBtn.addEventListener('click', () => {
+            mediaFileInput.click();
+        });
+
+        mediaFileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert(currentLang === 'de' ? "Bitte wählen Sie eine gültige Bilddatei." : "Seleziona un file immagine valido.");
+                return;
+            }
+
+            // Ottimizzazione automatica risoluzione per inferenza neurale veloce
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                img.onload = () => {
+                    const maxDim = 1280;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        const finalFile = blob ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }) : file;
+                        selectedMediaFile = finalFile;
+                        if (mediaPreviewName) mediaPreviewName.innerText = file.name;
+                        const sizeKb = Math.round((finalFile.size || file.size) / 1024);
+                        if (mediaPreviewSize) mediaPreviewSize.innerText = sizeKb > 1024 ? `${(sizeKb/1024).toFixed(1)} MB` : `${sizeKb} KB`;
+                        if (mediaPreviewImg) mediaPreviewImg.src = canvas.toDataURL('image/jpeg', 0.85);
+                        if (mediaPreviewContainer) mediaPreviewContainer.classList.remove('hidden');
+                    }, 'image/jpeg', 0.85);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function clearSelectedMedia() {
+        selectedMediaFile = null;
+        if (mediaFileInput) mediaFileInput.value = '';
+        if (mediaPreviewImg) mediaPreviewImg.src = '';
+        if (mediaPreviewContainer) mediaPreviewContainer.classList.add('hidden');
+    }
+
+    if (mediaPreviewCancel) {
+        mediaPreviewCancel.addEventListener('click', clearSelectedMedia);
+    }
+
+    // =============================================================
+    // GESTIONE MICROFONO E DETTATURA VOCALE CON EQUALIZZATORE
+    // =============================================================
+    const micBtn = document.getElementById('mic-btn');
+    const micIcon = document.getElementById('mic-icon');
+    const voiceEqualizerBar = document.getElementById('voice-equalizer-bar');
+    const voiceStatusText = document.getElementById('voice-status-text');
+
+    let speechRecognitionInstance = null;
+    let isSpeechRecording = false;
+    let preSpeechInputText = "";
+
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function initSpeechRecognition() {
+        if (!SpeechRec) return null;
+        try {
+            const rec = new SpeechRec();
+            rec.continuous = false;
+            rec.interimResults = true;
+            rec.maxAlternatives = 1;
+
+            rec.onstart = () => {
+                isSpeechRecording = true;
+                preSpeechInputText = chatInput.value;
+                if (voiceEqualizerBar) voiceEqualizerBar.classList.remove('hidden');
+                if (micBtn) micBtn.classList.add('mic-recording-active');
+                if (voiceStatusText) {
+                    voiceStatusText.innerText = currentLang === 'de' ? "Ich höre zu..." : "In ascolto...";
+                }
+            };
+
+            rec.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                const captured = finalTranscript || interimTranscript;
+                if (captured) {
+                    chatInput.value = preSpeechInputText ? (preSpeechInputText.trim() + " " + captured.trim()) : captured.trim();
+                }
+            };
+
+            rec.onerror = (event) => {
+                console.warn("Speech recognition error:", event.error);
+                stopSpeechRecording();
+                if (event.error === 'not-allowed') {
+                    openMicGuide();
+                }
+            };
+
+            rec.onend = () => {
+                stopSpeechRecording();
+            };
+
+            return rec;
+        } catch (e) {
+            console.error("Speech recognition init error:", e);
+            return null;
+        }
+    }
+
+    function stopSpeechRecording() {
+        isSpeechRecording = false;
+        if (voiceEqualizerBar) voiceEqualizerBar.classList.add('hidden');
+        if (micBtn) micBtn.classList.remove('mic-recording-active');
+        if (speechRecognitionInstance) {
+            try { speechRecognitionInstance.stop(); } catch(e) {}
+        }
+    }
+
+    function openMicGuide() {
+        const modal = document.getElementById('mic-guide-modal');
+        const content = document.getElementById('mic-guide-content');
+        if (!modal) return;
+
+        const isHttps = window.location.protocol === 'https:';
+        if (content) {
+            if (!isHttps) {
+                content.innerHTML = `
+                    <p class="text-[13px] text-gray-600 leading-relaxed">
+                        Sei attualmente connesso via <b>HTTP non cifrato</b>. Chrome su smartphone blocca il microfono per sicurezza su connessioni non HTTPS.
+                    </p>
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 text-center flex flex-col gap-2.5">
+                        <span class="text-[12px] text-[#204936] font-semibold">È attivo l'indirizzo sicuro certificato SSL Let's Encrypt:</span>
+                        <a href="https://<YOUR_VPS_DOMAIN_OR_IP>" class="w-full py-2.5 bg-[#416656] hover:bg-[#345245] text-white rounded-xl text-[13px] font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px]">lock</span>
+                            <span>Passa a HTTPS Sicuro</span>
+                        </a>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <p class="text-[13px] text-gray-600 leading-relaxed">
+                        L'accesso al microfono è stato disattivato o bloccato per questo sito nelle impostazioni del browser.
+                    </p>
+                    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3.5 text-[12px] text-gray-700 space-y-2">
+                        <div class="flex items-start gap-2">
+                            <span class="font-bold text-[#416656]">1.</span>
+                            <span>Tocca l'icona delle <b>impostazioni o lucchetto</b> a sinistra dell'URL nel browser.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="font-bold text-[#416656]">2.</span>
+                            <span>Tocca <b>Autorizzazioni</b> (o Impostazioni sito).</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="font-bold text-[#416656]">3.</span>
+                            <span>Attiva l'opzione <b>Microfono</b> su <b>Consenti</b>.</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeMicGuide() {
+        const modal = document.getElementById('mic-guide-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function copyHostAddress(btn) {
+        const url = window.location.origin;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(() => {
+                btn.innerText = "Copiato!";
+                setTimeout(() => btn.innerText = "Copia", 2000);
+            }).catch(() => {
+                prompt("Copia questo indirizzo:", url);
+            });
+        } else {
+            prompt("Copia questo indirizzo:", url);
+        }
+    }
+
+    if (micBtn) {
+        micBtn.addEventListener('click', () => {
+            if (isSpeechRecording) {
+                stopSpeechRecording();
+                return;
+            }
+
+            if (!SpeechRec) {
+                openMicGuide();
+                return;
+            }
+
+            if (!speechRecognitionInstance) {
+                speechRecognitionInstance = initSpeechRecognition();
+            }
+
+            if (speechRecognitionInstance) {
+                speechRecognitionInstance.lang = currentLang === 'de' ? 'de-DE' : 'it-IT';
+                try {
+                    speechRecognitionInstance.start();
+                } catch(err) {
+                    console.warn("Errore avvio SpeechRec:", err);
+                    speechRecognitionInstance = initSpeechRecognition();
+                    if (speechRecognitionInstance) {
+                        speechRecognitionInstance.lang = currentLang === 'de' ? 'de-DE' : 'it-IT';
+                        speechRecognitionInstance.start();
+                    }
+                }
+            }
+        });
+    }
+
+    // Gestione Notifiche Web
+    function requestNotificationPermission() {
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission().catch(() => {});
+        }
+    }
+
+    function triggerNativeNotification(text) {
+        if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+            const notifTitle = currentLang === 'de' ? "Simbio hat geantwortet" : "Simbio ha risposto";
+            const notifBody = (text || "").slice(0, 100) + "...";
+            try {
+                new Notification(notifTitle, {
+                    body: notifBody,
+                    icon: "/static/simbio_icon.png"
+                });
+            } catch(e) {
+                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.showNotification(notifTitle, {
+                            body: notifBody,
+                            icon: "/static/simbio_icon.png"
+                        });
+                    });
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
+    // GESTIONE STORICO SESSIONI DAL DATABASE SQLITE VPS
+    // -------------------------------------------------------------
+    async function fetchSessionsList() {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/api/v1/sessions`, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                cachedSessions = data.sessions || [];
+                renderSessionsList();
+            }
+        } catch(e) {
+            console.error("Errore fetch sessioni:", e);
+        }
+    }
+
+    function renderSessionsList() {
+        const container = document.getElementById('sessions-list-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (cachedSessions.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = "text-[12px] text-gray-400 italic px-2 py-3 text-center";
+            empty.innerText = I18N[currentLang].sessions_empty;
+            container.appendChild(empty);
+            return;
+        }
+
+        cachedSessions.forEach(s => {
+            const isActive = s.id === currentSessionId;
+            const item = document.createElement('div');
+            item.className = `group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
+                isActive ? 'bg-[#c3ecd7]/65 text-[#204936] font-semibold shadow-xs' : 'hover:bg-[#dee8ff]/60 text-[#444749]'
+            }`;
+            item.onclick = () => loadSession(s.id);
+
+            const safeTitle = escapeHtml(s.title);
+            const titleForAttr = safeTitle.replace(/'/g, "\\'");
+
+            item.innerHTML = `
+                <div class="flex items-center gap-2.5 overflow-hidden flex-1 mr-2">
+                    <span class="material-symbols-outlined text-[18px] flex-shrink-0 ${isActive ? 'text-[#416656]' : 'text-gray-400'}">chat_bubble_outline</span>
+                    <span class="text-[13px] truncate" title="${safeTitle}">${safeTitle}</span>
+                </div>
+                <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 flex-shrink-0">
+                    <button onclick="renameSessionPrompt('${s.id}', '${titleForAttr}', event)" class="p-1 rounded-md hover:bg-black/10 active:scale-90 text-gray-500 hover:text-gray-800 transition-all" title="Rinomina">
+                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                    </button>
+                    <button onclick="deleteSessionConfirm('${s.id}', event)" class="p-1 rounded-md hover:bg-red-100 active:scale-90 text-gray-400 hover:text-red-600 transition-all" title="Elimina">
+                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    async function loadSession(sessionId, shouldCloseDrawer = true) {
+        currentSessionId = sessionId;
+        localStorage.setItem('simbio_current_session_id', sessionId);
+        renderSessionsList();
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/api/v1/sessions/${sessionId}`, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                chatHistory = (data.messages || []).map(m => ({ 
+                    role: m.role, 
+                    content: m.content, 
+                    media_url: m.media_url || null 
+                }));
+                saveChatHistory();
+                renderChatHistory();
+            }
+        } catch(e) {
+            console.error("Errore caricamento sessione:", e);
+        }
+
+        if (shouldCloseDrawer) {
+            const drawer = document.getElementById('drawer');
+            if (drawer && !drawer.classList.contains('-translate-x-full')) toggleDrawer();
+        }
+    }
+
+    function startNewChat() {
+        currentSessionId = generateUUID();
+        localStorage.setItem('simbio_current_session_id', currentSessionId);
+        chatHistory = [];
+        saveChatHistory();
+        renderChatHistory();
+        renderSessionsList();
+
+        const drawer = document.getElementById('drawer');
+        if (drawer && !drawer.classList.contains('-translate-x-full')) toggleDrawer();
+    }
+
+    async function renameSessionPrompt(sessionId, currentTitle, e) {
+        if (e) e.stopPropagation();
+        const newTitle = prompt(I18N[currentLang].rename_prompt, currentTitle);
+        if (newTitle && newTitle.trim() && newTitle.trim() !== currentTitle) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/v1/sessions/${sessionId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({ title: newTitle.trim() })
+                });
+                if (res.ok) {
+                    await fetchSessionsList();
+                }
+            } catch(err) {
+                console.error("Errore rinomina sessione:", err);
+            }
+        }
+    }
+
+    async function deleteSessionConfirm(sessionId, e) {
+        if (e) e.stopPropagation();
+        if (!confirm(I18N[currentLang].delete_confirm)) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/v1/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`
+                }
+            });
+            if (res.ok) {
+                if (currentSessionId === sessionId) {
+                    currentSessionId = null;
+                    localStorage.removeItem('simbio_current_session_id');
+                    chatHistory = [];
+                    saveChatHistory();
+                    renderChatHistory();
+                }
+                await fetchSessionsList();
+            }
+        } catch(err) {
+            console.error("Errore eliminazione sessione:", err);
+        }
+    }
+
+    // Renderizza la cronologia ordinata dall'indice 0 alla fine
+    function renderChatHistory() {
+        chatBox.innerHTML = '';
+        if (chatHistory.length === 0) {
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.id = 'welcome-message-container';
+            welcomeDiv.className = "flex gap-3.5 max-w-[92%] sm:max-w-[85%]";
+            welcomeDiv.innerHTML = `
+                <div class="simbio-core-mini flex-shrink-0"></div>
+                <div class="bg-white/85 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 shadow-sm border border-white/60 text-[14.5px] leading-relaxed text-[#1f2937]">
+                    <p id="welcome-message">${I18N[currentLang].welcome_msg}</p>
+                </div>
+            `;
+            chatBox.appendChild(welcomeDiv);
+        } else {
+            chatHistory.forEach(msg => {
+                if (msg.role === 'user') {
+                    renderUserBubble(msg.content, msg.media_url);
+                } else if (msg.role === 'assistant') {
+                    renderAssistantBubble(msg.content);
+                }
+            });
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function selectModel(mode) {
+        currentModelMode = mode;
+        localStorage.setItem('simbio_model_mode', mode);
+        const liteBtn = document.getElementById('model-lite-btn');
+        const coreBtn = document.getElementById('model-core-btn');
+        if (mode === 'lite') {
+            liteBtn.className = "px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]";
+            coreBtn.className = "px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]";
+        } else {
+            coreBtn.className = "px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]";
+            liteBtn.className = "px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]";
+        }
+    }
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('simbio_lang', lang);
+
+        const itBtn = document.getElementById('lang-it-btn');
+        const deBtn = document.getElementById('lang-de-btn');
+        if (lang === 'it') {
+            itBtn.className = "px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]";
+            deBtn.className = "px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]";
+        } else {
+            deBtn.className = "px-2 py-1 rounded-full transition-all text-[#416656] bg-[#c3ecd7]";
+            itBtn.className = "px-2 py-1 rounded-full transition-all text-[#6b7280] hover:text-[#111c2d]";
+        }
+
+        document.getElementById('chat-input').placeholder = I18N[lang].input_placeholder;
+        document.getElementById('drawer-status-text').innerText = I18N[lang].system_online;
+        
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (I18N[lang][key]) el.innerText = I18N[lang][key];
+        });
+
+        // Aggiorna tutti i badge a schermo (IO / ICH) in tempo reale!
+        document.querySelectorAll('.user-avatar-badge').forEach(badge => {
+            badge.innerText = I18N[lang].user_badge;
+        });
+
+        const welcome = document.getElementById('welcome-message');
+        if (welcome) {
+            welcome.innerText = I18N[lang].welcome_msg;
+        }
+    }
+
+    // Gestione Drawer Menu
+    const menuBtn = document.getElementById('menu-btn');
+    const closeDrawerBtn = document.getElementById('close-drawer-btn');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawer-overlay');
+    function toggleDrawer() {
+        if (drawer.classList.contains('-translate-x-full')) {
+            drawer.classList.remove('-translate-x-full'); 
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        } else {
+            drawer.classList.add('-translate-x-full'); 
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+    }
+    menuBtn.addEventListener('click', toggleDrawer); 
+    closeDrawerBtn.addEventListener('click', toggleDrawer); 
+    overlay.addEventListener('click', toggleDrawer);
+
+    // FUNZIONE DI RENDERING BUBBLE UTENTE (CON SUPPORTO FOTO / SCREENSHOT)
+    function renderUserBubble(text, mediaUrl) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = "flex gap-3 max-w-[90%] sm:max-w-[85%] self-end flex-row-reverse animate-fade-in";
+        
+        const avatar = document.createElement('div');
+        avatar.className = "user-avatar-badge w-9 h-9 rounded-full bg-[#d8e3fb] flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-[#1e3a8a] shadow-sm";
+        avatar.innerText = I18N[currentLang].user_badge;
+        
+        const bubble = document.createElement('div');
+        bubble.className = "bg-[#416656] text-white rounded-2xl rounded-tr-sm p-3.5 sm:p-4 shadow-md text-[14.5px] leading-relaxed break-words flex flex-col";
+        
+        if (mediaUrl) {
+            const imgEl = document.createElement('img');
+            imgEl.src = mediaUrl;
+            imgEl.alt = "Foto o screenshot allegato";
+            imgEl.className = "rounded-xl max-w-full sm:max-w-xs max-h-64 object-cover mb-2 border border-white/25 shadow-xs cursor-pointer hover:opacity-95 transition-opacity";
+            imgEl.onclick = () => window.open(mediaUrl, '_blank');
+            bubble.appendChild(imgEl);
+        }
+
+        if (text) {
+            const textEl = document.createElement('span');
+            textEl.innerText = text;
+            bubble.appendChild(textEl);
+        }
+        
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        chatBox.appendChild(msgDiv);
+    }
+
+    // FUNZIONE DI RENDERING BUBBLE ASSISTENTE CON NUCLEO PICCOLO
+    function renderAssistantBubble(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = "flex gap-3.5 max-w-[92%] sm:max-w-[85%]";
+        
+        // Nucleo Dinamico Piccolo al posto della faccia
+        const avatar = document.createElement('div');
+        avatar.className = "simbio-core-mini flex-shrink-0";
+        
+        const bubble = document.createElement('div');
+        bubble.className = "bg-white/90 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 shadow-sm border border-white/60 text-[14.5px] leading-relaxed text-[#1f2937] break-words whitespace-pre-wrap";
+        bubble.innerText = text;
+        
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        chatBox.appendChild(msgDiv);
+    }
+
+    // RIFERIMENTI DIRETTI PER LO STREAM ATTIVO (Elimina collisioni di ID DOM)
+    let currentStreamResponseEl = null;
+    let currentStreamEkgEl = null;
+    let currentStreamAvatarEl = null;
+    let currentStreamContainerEl = null;
+
+    // IMPULSO NEL PENSARE
+    function createThinkingImpulse() {
+        // Se il messaggio di benvenuto è a schermo, rimuovilo all'avvio della conversazione
+        const welcomeContainer = document.getElementById('welcome-message-container');
+        if (welcomeContainer) welcomeContainer.remove();
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = "flex gap-3.5 max-w-[92%] sm:max-w-[85%] animate-fade-in";
+        
+        const avatar = document.createElement('div');
+        avatar.className = "simbio-core-mini flex-shrink-0";
+        
+        const bubble = document.createElement('div');
+        bubble.className = "bg-white/90 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 shadow-sm border border-white/60 text-[14.5px] leading-relaxed text-[#1f2937] break-words transition-all duration-300";
+        
+        const ekgWrapper = document.createElement('div');
+        ekgWrapper.className = "flex items-center gap-3 py-1";
+        ekgWrapper.innerHTML = `
+            <svg viewBox="0 0 100 30" class="w-20 h-5" fill="none" stroke="#416656" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ekg-line" d="M0 15 L20 15 L30 4 L40 26 L50 15 L60 15 L70 8 L80 22 L90 15 L100 15"/>
+            </svg>
+            <span class="text-[12px] font-mono text-[#416656] tracking-wide animate-pulse">${I18N[currentLang].thinking_status}</span>
+        `;
+        
+        const responseContent = document.createElement('div');
+        responseContent.className = "hidden leading-relaxed whitespace-pre-wrap";
+
+        bubble.appendChild(ekgWrapper);
+        bubble.appendChild(responseContent);
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        headerCore.classList.add('active-answering');
+
+        currentStreamContainerEl = msgDiv;
+        currentStreamAvatarEl = avatar;
+        currentStreamEkgEl = ekgWrapper;
+        currentStreamResponseEl = responseContent;
+    }
+
+    // MODULO VIVENTE ATTIVO NEL RISPONDERE
+    function transformToLivingModule() {
+        if (currentStreamAvatarEl && !currentStreamAvatarEl.classList.contains('active-answering')) {
+            currentStreamAvatarEl.classList.add('active-answering');
+        }
+        if (currentStreamEkgEl) {
+            currentStreamEkgEl.remove();
+            currentStreamEkgEl = null;
+        }
+        if (currentStreamResponseEl) {
+            currentStreamResponseEl.classList.remove('hidden');
+        }
+    }
+
+    function finalizeLivingModule(finalResponseText) {
+        if (currentStreamAvatarEl) {
+            currentStreamAvatarEl.classList.remove('active-answering');
+        }
+        headerCore.classList.remove('active-answering');
+
+        if (finalResponseText && finalResponseText.trim().length > 0) {
+            chatHistory.push({ role: 'assistant', content: finalResponseText.trim() });
+            saveChatHistory();
+            triggerNativeNotification(finalResponseText.trim());
+        }
+
+        currentStreamResponseEl = null;
+        currentStreamEkgEl = null;
+        currentStreamAvatarEl = null;
+        currentStreamContainerEl = null;
+
+        // Sincronizza lo storico nel drawer (aggiorna titolo e timestamp)
+        fetchSessionsList();
+    }
+
+    // INVIO MESSAGGIO E FLUSSO CRONOLOGICO
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text && !selectedMediaFile) return;
+
+        // Richiedi notifica se non ancora autorizzata
+        requestNotificationPermission();
+
+        // Se non c'è una sessione attiva, creane una nuova
+        if (!currentSessionId) {
+            currentSessionId = generateUUID();
+            localStorage.setItem('simbio_current_session_id', currentSessionId);
+        }
+
+        let uploadedMediaUrl = null;
+        if (selectedMediaFile) {
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedMediaFile);
+                const upResp = await fetch(`${API_BASE_URL}/api/v1/media/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: formData
+                });
+                if (upResp.ok) {
+                    const upData = await upResp.json();
+                    uploadedMediaUrl = upData.url;
+                } else {
+                    console.error("Upload immagine non riuscito:", await upResp.text());
+                }
+            } catch (upErr) {
+                console.error("Errore upload:", upErr);
+            }
+        }
+
+        clearSelectedMedia();
+        
+        // 1. Salva subito nella cronologia prima dell'invio
+        chatHistory.push({ role: 'user', content: text, media_url: uploadedMediaUrl });
+        saveChatHistory();
+
+        // 2. Renderizza subito il messaggio utente
+        renderUserBubble(text, uploadedMediaUrl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+
+        // 3. Crea l'impulso esattamente sotto l'ultimo messaggio inviato
+        createThinkingImpulse();
+
+        const targetModel = currentModelMode === 'lite' ? 'Simbio-Lite:latest' : 'Simbio:latest';
+        let accumulatedResponse = "";
+
+        try {
+            const promptToSend = text || (uploadedMediaUrl ? (currentLang === 'de' ? 'Analysiere dieses Bild.' : 'Analizza questa immagine.') : '');
+            const payload = {
+                session_id: currentSessionId,
+                prompt: promptToSend,
+                media_url: uploadedMediaUrl,
+                model: targetModel,
+                system_prompt: I18N[currentLang].system_prompt
+            };
+
+            const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop();
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line || line.startsWith("event: pulse")) continue;
+
+                    if (line.startsWith("data:")) {
+                        const jsonStr = line.replace("data:", "").trim();
+                        try {
+                            const data = JSON.parse(jsonStr);
+                            
+                            if (data.token) {
+                                transformToLivingModule();
+                                accumulatedResponse += data.token;
+                                if (currentStreamResponseEl) {
+                                    currentStreamResponseEl.innerText = accumulatedResponse;
+                                    chatBox.scrollTop = chatBox.scrollHeight;
+                                }
+                            }
+
+                            if (data.status === 'idle') {
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+
+            finalizeLivingModule(accumulatedResponse);
+
+        } catch (err) {
+            console.error(err);
+            if (currentStreamEkgEl) {
+                currentStreamEkgEl.innerHTML = `<span class="text-red-500 font-medium">${I18N[currentLang].error_net}</span>`;
+            }
+            finalizeLivingModule(null);
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    // Auto-espansione dinamica dell'area di testo (Textarea)
+    chatInput.addEventListener('input', () => {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 128) + 'px';
+    });
+
+    // Gestione tasti Invio / A Capo:
+    // - Su mobile (touchscreen): il tasto '↵' (A capo) inserisce una nuova riga nel testo;
+    //   l'invio del messaggio avviene toccando il tasto verde di invio accanto.
+    // - Su Desktop: premere Invio invia il messaggio; Shift+Invio va a capo.
+    chatInput.addEventListener('keydown', (e) => { 
+        if (e.key === 'Enter') {
+            const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+            if (isTouchDevice) {
+                // Su smartphone: il tasto della tastiera virtuale (↵) inserisce una nuova riga (a capo)
+                return;
+            } else {
+                // Su Desktop: Invio invia, Shift+Invio va a capo
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
+        }
+    });
+
+    // Inizializzazione pagina con sincronizzazione automatica SQLite
+    async function initApp() {
+        setLanguage(currentLang);
+        selectModel(currentModelMode);
+
+        await fetchSessionsList();
+
+        // Se il database non ha ancora sessioni ma il browser ha una chat memorizzata, sincronizzala subito!
+        if (cachedSessions.length === 0 && chatHistory.length > 0) {
+            if (!currentSessionId) {
+                currentSessionId = generateUUID();
+                localStorage.setItem('simbio_current_session_id', currentSessionId);
+            }
+            const firstUser = chatHistory.find(m => m.role === 'user');
+            const autoTitle = firstUser ? (firstUser.content.slice(0, 36) + "...") : "Prima Conversazione";
+            
+            try {
+                await fetch(`${API_BASE_URL}/api/v1/sessions/${currentSessionId}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        title: autoTitle,
+                        messages: chatHistory
+                    })
+                });
+                await fetchSessionsList();
+            } catch(e) {
+                console.warn("Auto-sync initial chat failed:", e);
+            }
+        }
+
+        if (currentSessionId && cachedSessions.some(s => s.id === currentSessionId)) {
+            await loadSession(currentSessionId, false);
+        } else if (cachedSessions.length > 0) {
+            await loadSession(cachedSessions[0].id, false);
+        } else {
+            renderChatHistory();
+        }
+    }
+
+    initApp();
+</script>
+</body>
+</html>

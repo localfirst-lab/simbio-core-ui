@@ -1,0 +1,57 @@
+# Python Bytecode and Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment and Secret Files (CRITICAL: NEVER COMMIT)
+.env
+*.env
+*.key
+*.pem
+master_author.key
+
+# SQLite Databases & Dynamic State
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+simbio_chat.db
+
+# Dynamic Uploads (keep directory via .gitkeep)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# System & Diagnostic Logs
+*.log
+simbio_logs_*.txt
+*.bak
+
+# IDE & OS Metadata
+.idea/
+.vscode/
+.zed/
+.DS_Store
+Thumbs.db

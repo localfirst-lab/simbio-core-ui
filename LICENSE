@@ -1,0 +1,46 @@
+COMMUNITY SOURCE & NON-COMMERCIAL RESEARCH LICENSE
+Version 1.0 (September 2026)
+
+Copyright (c) 2026 Davide Carrieri
+Organization: Local-First Lab (https://github.com/localfirst-lab)
+All Rights Reserved.
+
+================================================================================
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+================================================================================
+
+1. GRANT OF LICENSE (PERSONAL, EDUCATIONAL & COMMUNITY RESEARCH USE)
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to inspect,
+   test, execute, experiment with, and modify the Software for non-commercial,
+   personal, educational, and scientific research purposes only, subject to the
+   following conditions:
+
+   a. The above copyright notice, this license notice, and the tamper-evident
+      core integrity attribution must be retained in all copies or substantial
+      portions of the Software.
+   b. Any improvements, bug fixes, or enhancements developed for the Software
+      should ideally be contributed back to the author / upstream repository.
+
+2. NON-COMMERCIAL RESTRICTION (STRICTLY PROHIBITED WITHOUT PRIOR PERMISSION)
+   The Software, in source code or binary form, modified or unmodified:
+   a. MAY NOT be sold, rented, leased, licensed, or sublicensed.
+   b. MAY NOT be bundled, integrated, or distributed within any commercial product,
+      enterprise service, SaaS offering, or paid client deliverables.
+   c. MAY NOT be used by any commercial entity or agency for profit-generating
+      activities without explicit, written prior authorization from Davide Carrieri.
+
+3. TAMPER-EVIDENT INTEGRITY ANCHOR
+   The software includes load-bearing digital watermarking and zero-trust
+   verification mechanics (`core_integrity.py`). Removing, disabling, or
+   circumventing the author signature mechanics constitutes a breach of this
+   license agreement.
+
+4. DISCLAIMER OF WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHOR OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="light" lang="it">
+<head>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0b0f17">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <title>Simbio - Console Terminale</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0b0f17; margin: 0; font-family: 'JetBrains Mono', monospace; }
+        .terminal-bg { background-color: rgba(11, 15, 23, 0.98); }
+        .terminal-text { color: #4ade80; text-shadow: 0 0 6px rgba(74, 222, 128, 0.4); }
+        .terminal-text-dim { color: #64748b; }
+        .terminal-border { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+        
+        .drag-handle {
+            width: 44px;
+            height: 5px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col relative text-gray-200 bg-[#0b0f17]">
+
+<!-- BARRA SUPERIORE (HEADER) -->
+<header class="fixed top-0 left-0 w-full bg-[#0b0f17]/95 backdrop-blur-xl border-b border-white/10 z-40 select-none flex flex-col">
+    <div class="h-14 flex items-center justify-between px-3 sm:px-4">
+        <!-- Freccia Indietro -->
+        <a href="/" class="flex items-center gap-1 text-gray-300 hover:text-white p-2 hover:bg-white/10 rounded-full active:scale-90 transition-all">
+            <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+        </a>
+
+        <!-- MANIGLIA CHIUDI TERMINALE -->
+        <a href="/" id="swipe-handle-zone" class="flex flex-col items-center py-1.5 px-6 cursor-pointer active:scale-95 transition-all text-center select-none" title="Chiudi Console">
+            <div class="drag-handle mb-1"></div>
+            <span id="txt-swipe-down" class="text-[9px] uppercase tracking-wider text-gray-400 font-bold hover:text-white transition-colors">Chiudi</span>
+        </a>
+        
+        <!-- Pulsanti Pulisci e Scarica -->
+        <div class="flex items-center gap-1.5">
+            <button id="btn-clear" onclick="clearLogs()" class="text-[10px] uppercase font-bold text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg active:scale-95 transition-all">Pulisci</button>
+            <button id="btn-download" onclick="downloadLogs()" class="text-[10px] uppercase font-bold text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg active:scale-95 transition-all">Scarica</button>
+        </div>
+    </div>
+
+    <!-- SOTTO-BARRA FILTRI & STATO HARDWARE -->
+    <div class="px-3 py-1.5 border-t border-white/5 flex items-center justify-between gap-2 overflow-x-auto text-[11px]">
+        <!-- Filtri Servizio -->
+        <div class="flex items-center gap-1 flex-shrink-0">
+            <button onclick="setLogFilter('all')" id="flt-all" class="px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">TUTTI</button>
+            <button onclick="setLogFilter('api')" id="flt-api" class="px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">API</button>
+            <button onclick="setLogFilter('ollama')" id="flt-ollama" class="px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">OLLAMA</button>
+            <button onclick="setLogFilter('errors')" id="flt-errors" class="px-2 py-0.5 rounded-md font-bold transition-all text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30">ERRORI 🔴</button>
+        </div>
+        <!-- Hardware Mini Ticker -->
+        <div id="hw-mini-ticker" class="text-[10px] font-mono text-gray-400 truncate flex items-center gap-1.5 flex-shrink-0">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="hw-stats-text">Uptime: -- | RAM: -- | CPU: --</span>
+        </div>
+    </div>
+</header>
+
+<!-- AREA LOG (CON SPAZIO SOPRA E SOTTO PER LE BARRE) -->
+<main class="flex-1 w-full pt-[94px] pb-[85px] overflow-y-auto px-3 sm:px-5 text-[11px] sm:text-[12px] terminal-text flex flex-col gap-1.5 select-text font-mono" id="log-container">
+    <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
+        <div class="terminal-text-dim text-[11px]" id="init-log-text">Inizializzazione Simbio Gateway & Journalctl Streamer... [OK]</div>
+        <div class="text-white font-bold text-[12px]">=== SIMBIO CORE LIVE TERMINAL (VPS VPS_HOST) ===</div>
+    </div>
+</main>
+
+<!-- BARRA INFERIORE DI NAVIGAZIONE PER CAMBIARE SESSIONE -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-[#0f172a]/95 backdrop-blur-2xl border-t border-white/15 shadow-2xl flex justify-center py-2 px-4">
+    <nav class="w-full max-w-md flex justify-around items-center">
+        <a href="/" class="flex flex-col items-center justify-center text-gray-400 p-2 hover:text-emerald-400 active:scale-90 transition-colors" title="Chat">
+            <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+        </a>
+        <a href="/hardware" class="flex flex-col items-center justify-center text-gray-400 p-2 hover:text-blue-400 active:scale-90 transition-colors" title="Hardware">
+            <span class="material-symbols-outlined text-[24px]">sensors</span>
+        </a>
+        <a href="/orchestra" class="flex flex-col items-center justify-center text-gray-400 p-2 hover:text-purple-400 active:scale-90 transition-colors" title="Orchestra">
+            <span class="material-symbols-outlined text-[24px]">hub</span>
+        </a>
+        <a href="/console" class="flex flex-col items-center justify-center bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 rounded-full p-2 active:scale-90 shadow-sm transition-all" title="Terminal">
+            <span class="material-symbols-outlined text-[24px]">terminal</span>
+        </a>
+    </nav>
+</footer>
+
+<script>
+    const currentLang = localStorage.getItem('simbio_lang') || 'it';
+    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
+    const API_BASE_URL = window.location.origin;
+
+    let activeFilter = 'all';
+    let seenLogKeys = new Set();
+    let autoScroll = true;
+
+    if (currentLang === 'de') {
+        document.title = "Simbio - Terminal-Konsole";
+        document.getElementById('btn-clear').innerText = "Löschen";
+        document.getElementById('btn-download').innerText = "Download";
+        const swipeTxt = document.getElementById('txt-swipe-down');
+        if (swipeTxt) swipeTxt.innerText = "Schließen";
+        const fltAll = document.getElementById('flt-all');
+        if (fltAll) fltAll.innerText = "ALLE";
+        const fltErr = document.getElementById('flt-errors');
+        if (fltErr) fltErr.innerText = "FEHLER 🔴";
+        const initText = document.getElementById('init-log-text');
+        if (initText) initText.innerText = "Initialisierung Simbio Gateway & Journalctl Streamer... [OK]";
+    }
+
+    // Swipe down to close on mobile touch
+    let touchStartY = 0;
+    const handleZone = document.getElementById('swipe-handle-zone');
+    if (handleZone) {
+        handleZone.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            window.location.href = '/';
+        });
+    }
+    window.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0].clientY < 85) touchStartY = e.touches[0].clientY;
+        else touchStartY = 0;
+    }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+        if (touchStartY > 0 && e.changedTouches && (e.changedTouches[0].clientY - touchStartY > 60)) {
+            window.location.href = '/';
+        }
+    }, { passive: true });
+
+    function setLogFilter(filter) {
+        activeFilter = filter;
+        ['all', 'api', 'ollama', 'errors'].forEach(f => {
+            const btn = document.getElementById(`flt-${f}`);
+            if (!btn) return;
+            if (f === filter) {
+                if (f === 'errors') {
+                    btn.className = "px-2 py-0.5 rounded-md font-bold transition-all bg-red-500/20 text-red-400 border border-red-500/40";
+                } else {
+                    btn.className = "px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                }
+            } else {
+                btn.className = f === 'errors' 
+                    ? "px-2 py-0.5 rounded-md font-bold transition-all text-red-400 hover:bg-red-500/10 border border-transparent"
+                    : "px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5";
+            }
+        });
+
+        // Reset buffer e ricarica
+        seenLogKeys.clear();
+        const filterTitle = filter === 'all' && currentLang === 'de' ? 'ALLE' : (filter === 'errors' && currentLang === 'de' ? 'FEHLER' : filter.toUpperCase());
+        const filterLabel = currentLang === 'de' ? 'Angewendeter Filter' : 'Filtro applicato';
+        document.getElementById('log-container').innerHTML = `
+            <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
+                <div class="terminal-text-dim text-[11px]">${filterLabel}: [${filterTitle}]</div>
+            </div>
+        `;
+        fetchRealLogs();
+    }
+
+    function clearLogs() {
+        seenLogKeys.clear();
+        document.getElementById('log-container').innerHTML = '';
+    }
+
+    function appendLogEntry(item) {
+        const logBox = document.getElementById('log-container');
+        if (!logBox) return;
+
+        const key = (item.ts || '') + '|' + (item.raw || item.msg);
+        if (seenLogKeys.has(key)) return;
+        seenLogKeys.add(key);
+
+        const line = document.createElement('div');
+        const isError = item.lvl === 'ERROR';
+        const isWarn = item.lvl === 'WARN';
+
+        line.className = `flex gap-2 sm:gap-3 leading-relaxed break-words py-0.5 px-1.5 rounded transition-all ${
+            isError ? 'bg-red-950/40 text-red-300 border-l-2 border-red-500' :
+            isWarn ? 'bg-amber-950/20 text-amber-300' :
+            'hover:bg-white/5 text-gray-200'
+        }`;
+
+        let srcBadgeColor = 'text-cyan-400 bg-cyan-950/40 border border-cyan-800/50';
+        if (item.src === 'OLLAMA') srcBadgeColor = 'text-purple-300 bg-purple-950/40 border border-purple-800/50';
+        else if (item.src === 'SYS') srcBadgeColor = 'text-gray-400 bg-gray-900 border border-gray-700';
+
+        const tsDisplay = item.ts || new Date().toLocaleTimeString();
+
+        line.innerHTML = `
+            <span class="terminal-text-dim flex-shrink-0 select-none">[${tsDisplay}]</span>
+            <span class="px-1 py-0.2 text-[9px] font-bold rounded flex-shrink-0 ${srcBadgeColor}">[${item.src}]</span>
+            <span class="flex-1 ${isError ? 'font-bold text-red-300' : (isWarn ? 'text-amber-300' : 'text-emerald-300/90')}">${escapeHtml(item.msg)}</span>
+        `;
+
+        logBox.appendChild(line);
+
+        if (autoScroll) {
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
+
+    async function fetchRealLogs() {
+        try {
+            const svcParam = activeFilter === 'errors' ? 'all' : activeFilter;
+            const lvlParam = activeFilter === 'errors' ? 'errors' : 'all';
+            const res = await fetch(`${API_BASE_URL}/api/v1/system/logs?service=${svcParam}&lines=70&level=${lvlParam}`, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.logs && Array.isArray(data.logs)) {
+                    data.logs.forEach(appendLogEntry);
+                }
+            }
+        } catch (e) {
+            console.warn("Errore fetch log:", e);
+        }
+    }
+
+    async function pollHardwareTicker() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/v1/system/status`, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const t = data.telemetry;
+                const ticker = document.getElementById('hw-stats-text');
+                if (ticker) {
+                    const uptimeLabel = currentLang === 'de' ? 'Laufzeit' : 'Uptime';
+                    ticker.innerText = `${uptimeLabel}: ${data.uptime} | RAM: ${t.ram.used_gb}/${t.ram.total_gb}GB (${t.ram.percent}%) | CPU: ${t.cpu.percent}%`;
+                }
+            }
+        } catch (e) {}
+    }
+
+    // Carica subito e imposta polling
+    fetchRealLogs();
+    pollHardwareTicker();
+    setInterval(fetchRealLogs, 3000);
+    setInterval(pollHardwareTicker, 10000);
+
+    function downloadLogs() {
+        const logs = document.getElementById('log-container').innerText;
+        const blob = new Blob([logs], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `simbio_logs_${Date.now()}.txt`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+</body>
+</html>

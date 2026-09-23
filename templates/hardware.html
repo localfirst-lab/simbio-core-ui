@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#416656">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <title>Simbio - Telemetria Hardware VPS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <style>
+        @keyframes neuralPulse {
+            0% { background-color: #e8f5e9; }
+            33% { background-color: #e3f2fd; }
+            66% { background-color: #f3e5f5; }
+            100% { background-color: #e8f5e9; }
+        }
+        body { 
+            animation: neuralPulse 14s ease-in-out infinite; 
+            transition: background-color 1s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel { 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px); 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.5) 100%); 
+            border: 1px solid rgba(255, 255, 255, 0.7); 
+            box-shadow: 0 10px 25px rgba(17, 28, 45, 0.04); 
+        }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-[#111c2d] h-screen w-screen overflow-hidden relative p-4 flex flex-col justify-start">
+
+<!-- HEADER SUPERIORE -->
+<header class="fixed top-0 left-0 w-full bg-white/50 backdrop-blur-xl border-b border-[#d8e3fb]/50 flex items-center justify-between px-4 h-16 z-50">
+    <a href="/" class="text-[#5c5f61] p-2 hover:bg-[#d8e3fb]/40 rounded-full flex items-center justify-center active:scale-95 transition-colors">
+        <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+    </a>
+    <h1 id="hw-title" class="text-[17px] font-bold tracking-tight text-[#374151]">Stato VPS & Nucleo</h1>
+    <div class="flex items-center gap-2">
+        <span id="status-tag" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full">ONLINE</span>
+    </div>
+</header>
+
+<!-- CONTENUTO TELEMETRIA -->
+<main class="w-full max-w-lg mx-auto flex flex-col gap-3 pt-[72px] pb-[85px] overflow-y-auto">
+    <!-- UPTIME -->
+    <div class="glass-panel rounded-2xl p-4 flex items-center justify-between w-full shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[22px]">timer</span>
+            </div>
+            <div>
+                <h3 id="lbl-uptime" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Uptime Server</h3>
+                <p id="uptime-sub" class="text-[11px] text-gray-500 font-mono">Linux VPS</p>
+            </div>
+        </div>
+        <div class="flex-shrink-0">
+            <h3 id="uptime-val" class="font-mono text-[16px] font-bold text-gray-800 tracking-tight">...</h3>
+        </div>
+    </div>
+
+    <!-- RAM VPS -->
+    <div class="glass-panel rounded-2xl p-4 flex flex-col gap-2 w-full shadow-sm">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-[22px]">memory</span>
+                </div>
+                <div>
+                    <h3 id="lbl-ram" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">RAM Simbio (VPS)</h3>
+                </div>
+            </div>
+            <h3 id="ram-val" class="font-mono text-[14px] font-bold text-gray-900">...</h3>
+        </div>
+        <!-- Progress Bar RAM -->
+        <div class="w-full bg-gray-200/80 rounded-full h-2 overflow-hidden mt-1">
+            <div id="ram-bar" class="bg-purple-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- CARICO CPU -->
+    <div class="glass-panel rounded-2xl p-4 flex flex-col gap-2 w-full shadow-sm">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-[22px]">developer_board</span>
+                </div>
+                <div>
+                    <h3 id="lbl-cpu" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Carico CPU</h3>
+                </div>
+            </div>
+            <h3 id="cpu-val" class="font-mono text-[15px] font-bold text-gray-900">...</h3>
+        </div>
+        <!-- Progress Bar CPU -->
+        <div class="w-full bg-gray-200/80 rounded-full h-2 overflow-hidden mt-1">
+            <div id="cpu-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- TEMPERATURA & STATO -->
+    <div class="glass-panel rounded-2xl p-4 flex items-center justify-between w-full shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[22px]">thermostat</span>
+            </div>
+            <div>
+                <h3 id="lbl-temp" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Temperatura</h3>
+            </div>
+        </div>
+        <div class="flex-shrink-0">
+            <h3 id="temp-val" class="font-mono text-[16px] font-bold text-gray-800">...</h3>
+        </div>
+    </div>
+
+    <!-- DISCO STORAGE -->
+    <div class="glass-panel rounded-2xl p-4 flex items-center justify-between w-full shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[22px]">hard_drive</span>
+            </div>
+            <div>
+                <h3 id="lbl-disk" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Archivio Disco</h3>
+            </div>
+        </div>
+        <div class="flex-shrink-0">
+            <h3 id="disk-val" class="font-mono text-[13px] font-bold text-gray-800">...</h3>
+        </div>
+    </div>
+
+    <!-- MODELLI ATTIVI CARICATI IN RAM -->
+    <div class="glass-panel rounded-2xl p-4 flex flex-col gap-2 w-full shadow-sm">
+        <div class="flex items-center gap-2 mb-1">
+            <span class="material-symbols-outlined text-[20px] text-[#416656]">neurology</span>
+            <h3 id="lbl-models" class="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Modelli nel Nucleo</h3>
+        </div>
+        <div id="active-models-list" class="flex flex-col gap-1.5 text-[12px] font-mono">
+            <div class="text-gray-400 italic">Rilevamento modelli...</div>
+        </div>
+    </div>
+</main>
+
+<!-- BOTTOM BAR NAVIGATION -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-center">
+    <nav class="w-full max-w-lg bg-[#f9f9ff]/92 backdrop-blur-2xl border-t border-[#d8e3fb]/60 shadow-md flex justify-around items-center px-4 py-2.5">
+        <a href="/" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#416656] active:scale-90 transition-colors">
+            <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+        </a>
+        <a href="/hardware" class="flex flex-col items-center justify-center bg-[#c3ecd7]/70 text-[#416656] rounded-full p-2.5 active:scale-90 shadow-sm transition-all">
+            <span class="material-symbols-outlined text-[24px]">sensors</span>
+        </a>
+        <a href="/orchestra" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#204936] active:scale-90 transition-colors" title="Orchestra Neurale">
+            <span class="material-symbols-outlined text-[24px]">hub</span>
+        </a>
+        <a href="/console" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#7c3aed] active:scale-90 transition-colors">
+            <span class="material-symbols-outlined text-[24px]">terminal</span>
+        </a>
+    </nav>
+</div>
+
+<script>
+    const currentLang = localStorage.getItem('simbio_lang') || 'it';
+    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
+    const API_BASE_URL = window.location.origin;
+
+    const HW_I18N = {
+        it: {
+            title: "Stato VPS & Nucleo",
+            uptime: "Uptime Server",
+            ram: "RAM Simbio (VPS)",
+            cpu: "Carico CPU",
+            temp: "Temperatura",
+            disk: "Archivio Disco",
+            models: "Modelli nel Nucleo",
+            connected: "NUCLEO CONNESSO",
+            disconnected: "NUCLEO SCOLLEGATO"
+        },
+        de: {
+            title: "VPS & Kern-Status",
+            uptime: "Server-Laufzeit",
+            ram: "Simbio RAM (VPS)",
+            cpu: "CPU-Auslastung",
+            temp: "Temperatur",
+            disk: "Festplattenspeicher",
+            models: "Modelle im Kern",
+            connected: "KERN VERBUNDEN",
+            disconnected: "KERN GETRENNT"
+        }
+    };
+
+    function applyTranslations() {
+        const t = HW_I18N[currentLang];
+        document.getElementById('hw-title').innerText = t.title;
+        document.getElementById('lbl-uptime').innerText = t.uptime;
+        document.getElementById('lbl-ram').innerText = t.ram;
+        document.getElementById('lbl-cpu').innerText = t.cpu;
+        document.getElementById('lbl-temp').innerText = t.temp;
+        document.getElementById('lbl-disk').innerText = t.disk;
+        document.getElementById('lbl-models').innerText = t.models;
+    }
+    applyTranslations();
+
+    async function updateTelemetry() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/v1/system/status`, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
+            
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const data = await res.json();
+            const telem = data.telemetry;
+
+            document.getElementById('uptime-val').innerText = data.uptime;
+            document.getElementById('ram-val').innerText = telem.ram.display;
+            document.getElementById('ram-bar').style.width = `${telem.ram.percent}%`;
+
+            document.getElementById('cpu-val').innerText = telem.cpu.display;
+            document.getElementById('cpu-bar').style.width = `${telem.cpu.percent}%`;
+
+            document.getElementById('temp-val').innerText = telem.temperatura.valore;
+            document.getElementById('disk-val').innerText = telem.disco.display;
+
+            const tag = document.getElementById('status-tag');
+            tag.innerText = HW_I18N[currentLang].connected;
+            tag.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full";
+
+            // Modelli attivi
+            const modelsList = document.getElementById('active-models-list');
+            if (telem.nucleo && telem.nucleo.modelli_attivi && telem.nucleo.modelli_attivi.length > 0) {
+                modelsList.innerHTML = telem.nucleo.modelli_attivi.map(m => `
+                    <div class="flex items-center justify-between bg-white/70 p-2 rounded-lg border border-gray-100">
+                        <span class="text-emerald-700 font-bold">⚡ ${m.name}</span>
+                        <span class="text-gray-500 text-[10px]">${m.size_vram_gb > 0 ? m.size_vram_gb + ' GB VRAM' : 'RAM'}</span>
+                    </div>
+                `).join('');
+            } else {
+                modelsList.innerHTML = `<div class="text-gray-500 italic p-1">Default: ${telem.nucleo.default_model} (in attesa di carico)</div>`;
+            }
+
+        } catch (err) {
+            console.error("Errore telemetria:", err);
+            const tag = document.getElementById('status-tag');
+            tag.innerText = HW_I18N[currentLang].disconnected;
+            tag.className = "text-[10px] font-mono font-bold text-red-700 bg-red-100 border border-red-200 px-2.5 py-0.5 rounded-full";
+        }
+    }
+
+    setInterval(updateTelemetry, 4000);
+    updateTelemetry();
+</script>
+</body>
+</html>
+
