@@ -225,8 +225,15 @@
             document.getElementById('cpu-val').innerText = telem.cpu.display;
             document.getElementById('cpu-bar').style.width = `${telem.cpu.percent}%`;
 
-            document.getElementById('temp-val').innerText = telem.temperatura.valore;
-            document.getElementById('disk-val').innerText = telem.disco.display;
+            let tempDisplay = telem.temperatura.valore;
+            if (currentLang === 'de' && tempDisplay === 'Normale') tempDisplay = 'Normal';
+            document.getElementById('temp-val').innerText = tempDisplay;
+
+            if (currentLang === 'de') {
+                document.getElementById('disk-val').innerText = `${telem.disco.libero_gb} GB frei von ${telem.disco.totale_gb} GB`;
+            } else {
+                document.getElementById('disk-val').innerText = telem.disco.display;
+            }
 
             const tag = document.getElementById('status-tag');
             tag.innerText = HW_I18N[currentLang].connected;
