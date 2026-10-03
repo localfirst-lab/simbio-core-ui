@@ -39,6 +39,10 @@ master_author.key
 *.db-shm
 *.sqlite3
 simbio_chat.db
+banned_ips.json
+config_monitor.json
+diario_storico.json
+diario_storico.txt
 
 # Dynamic Uploads (keep directory via .gitkeep)
 static/uploads/*

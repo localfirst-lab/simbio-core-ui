@@ -1,8 +1,9 @@
 """
 Simbio VPS Core API & UI Server
 Punto di ingresso principale:
-- Serve la Web UI Mobile PWA (/ , /hardware, /console)
-- Espone le API REST/SSE sicure (/v1/chat/completions, /api/v1/...)
+- Serve la Web UI Mobile PWA (/ , /hardware, /console, /orchestra, /security)
+- Espone il Service Worker (/sw.js) e il Manifest (/manifest.json) per la PWA nativa senza barra URL
+- Espone le API REST/SSE sicure (/v1/chat/completions, /api/v1/system, /api/v1/security)
 """
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -13,13 +14,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 
 import config
-import core_integrity
 import database
 from routes.chat import router as chat_router
 from routes.system import router as system_router
 from routes.telegram import router as telegram_router
 from routes.sessions import router as sessions_router
 from routes.media import router as media_router
+from routes.security import router as security_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,13 +30,11 @@ STATIC_DIR = BASE_DIR / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("==================================================")
-    print("  Simbio Core API & UI v2.0 - ONLINE")
+    print("  Simbio Core API & UI v2.1 - ONLINE")
     print(f"  Web UI:    http://{config.HOST}:{config.PORT}/")
     print(f"  API Docs:  http://{config.HOST}:{config.PORT}/docs")
     print(f"  Ollama:    {config.OLLAMA_BASE_URL}")
     print(f"  Default:   {config.DEFAULT_MODEL}")
-    core_integrity.verify_core_integrity()
-    print(f"  Engine:    localfirst-core/{core_integrity.get_integrity_fingerprint()} [AUTHENTIC]")
     print("==================================================")
     # Inizializzazione Database SQLite per storico conversazioni
     database.init_db()
@@ -45,14 +44,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Simbio VPS Core API",
-    version="2.0.0",
-    description="API Gateway e Web UI Neurale per Simbio Ecosystem.",
+    version="2.1.0",
+    description="API Gateway e Web UI Neurale con Shield Sicurezza per Simbio Ecosystem.",
     lifespan=lifespan
 )
-
-# Registrazione Middleware di Integrità e Paternità
-if core_integrity.CoreIntegrityMiddleware:
-    app.add_middleware(core_integrity.CoreIntegrityMiddleware)
 
 # Configurazione CORS
 app.add_middleware(
@@ -67,12 +62,43 @@ app.add_middleware(
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Inclusione dei Router API
+# Inclusione dei Router API protetti da Pydantic
 app.include_router(chat_router)
 app.include_router(system_router)
 app.include_router(telegram_router)
 app.include_router(sessions_router)
 app.include_router(media_router)
+app.include_router(security_router)
+
+# -------------------------------------------------------------
+# ROTTE PWA ESSENZIALI (PER NASCONDERE L'URL SULLO SMARTPHONE)
+# -------------------------------------------------------------
+@app.get("/sw.js", tags=["PWA"])
+async def serve_sw():
+    """Serve il Service Worker alla radice per consentire lo scope globale."""
+    sw_file = STATIC_DIR / "sw.js"
+    if sw_file.exists():
+        return FileResponse(
+            sw_file,
+            media_type="application/javascript",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Service-Worker-Allowed": "/"
+            }
+        )
+    return HTMLResponse("// Service Worker non trovato", status_code=404)
+
+@app.get("/manifest.json", tags=["PWA"])
+async def serve_manifest():
+    """Serve il Web App Manifest alla radice."""
+    manifest_file = STATIC_DIR / "manifest.json"
+    if manifest_file.exists():
+        return FileResponse(
+            manifest_file,
+            media_type="application/manifest+json",
+            headers={"Cache-Control": "public, max-age=3600"}
+        )
+    return HTMLResponse("{}", status_code=404)
 
 # -------------------------------------------------------------
 # ROTTE WEB UI (Mobile PWA & Browser)
@@ -106,13 +132,20 @@ async def serve_orchestra():
         return FileResponse(orch_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     return HTMLResponse("<h1>Dashboard Orchestra non trovata.</h1>")
 
+@app.get("/security", response_class=HTMLResponse, tags=["Web UI"])
+async def serve_security():
+    sec_file = TEMPLATES_DIR / "security.html"
+    if sec_file.exists():
+        return FileResponse(sec_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    return HTMLResponse("<h1>Shield Sicurezza non trovato.</h1>")
+
 @app.get("/health", tags=["Salute"])
 async def health_check():
     return {
         "status": "ONLINE",
         "service": "Simbio Core API & UI",
-        "version": "2.0.0",
-        "engine": f"localfirst-core/{core_integrity.get_integrity_fingerprint()}"
+        "version": "2.1.0",
+        "shield": "ACTIVE"
     }
 
 if __name__ == "__main__":
@@ -123,4 +156,3 @@ if __name__ == "__main__":
         reload=False,
         workers=1
     )
-

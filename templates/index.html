@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html class="light" lang="it">
 <head>
-    <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#416656">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Simbio OS">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/static/icon-512.png">
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
     <title>Simbio - Interfaccia Neurale VPS</title>
@@ -214,13 +218,28 @@
                 <span class="material-symbols-outlined">terminal</span> <span data-i18n="nav_console">Console Terminale</span>
             </a>
         </li>
+        <li>
+            <a href="/security" class="flex items-center gap-4 text-[#444749] px-4 py-3 rounded-xl hover:bg-[#dee8ff] transition-colors">
+                <span class="material-symbols-outlined text-emerald-600">shield</span> <span data-i18n="nav_security">Shield Sicurezza</span>
+            </a>
+        </li>
         <li class="mt-auto pt-6 flex flex-col gap-2">
-            <a href="https://t.me/<YOUR_TELEGRAM_BOT>" target="_blank" class="flex items-center gap-3 text-[#204936] px-4 py-3 rounded-xl bg-[#c3ecd7]/60 hover:bg-[#c3ecd7] transition-all font-bold border border-[#416656]/30 shadow-xs">
-                <span class="material-symbols-outlined text-[22px]">smart_toy</span> <span data-i18n="nav_telegram_bot">Bot Telegram (@<YOUR_TELEGRAM_BOT>)</span>
+            <a href="https://t.me/Simbio_imput_bot" target="_blank" class="flex items-center gap-3 text-[#204936] px-4 py-3 rounded-xl bg-[#c3ecd7]/60 hover:bg-[#c3ecd7] transition-all font-bold border border-[#416656]/30 shadow-xs">
+                <span class="material-symbols-outlined text-[22px]">smart_toy</span> <span data-i18n="nav_telegram_bot">Bot Telegram (@Simbio_imput_bot)</span>
             </a>
-            <a href="https://t.me/<YOUR_TELEGRAM_CHANNEL_OR_GROUP>" target="_blank" class="flex items-center gap-3 text-gray-500 hover:text-[#416656] px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors text-[12px]">
-                <span class="material-symbols-outlined text-[18px]">history_edu</span> <span data-i18n="nav_ledger">Registro Canale Ledger</span>
-            </a>
+            <!-- Tasto Notarizzazione Rapida / Registro Ledger -->
+            <div class="flex items-center gap-1.5">
+                <button onclick="openNotaryModal()" class="flex-1 flex items-center justify-between text-gray-700 hover:text-[#204936] px-3.5 py-2.5 rounded-xl bg-[#dee8ff]/40 hover:bg-[#dee8ff]/80 transition-all text-[12px] font-semibold border border-[#d8e3fb] shadow-2xs active:scale-95">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px] text-amber-600">history_edu</span>
+                        <span data-i18n="nav_ledger">Registro Canale Ledger</span>
+                    </div>
+                    <span class="material-symbols-outlined text-[16px] text-emerald-700">add_task</span>
+                </button>
+                <a href="https://t.me/+QkBe3QGC71dlYmRi" target="_blank" class="p-2.5 text-gray-500 hover:text-[#416656] bg-white hover:bg-gray-100 border border-[#d8e3fb] rounded-xl transition-all active:scale-95" title="Apri Canale Telegram">
+                    <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                </a>
+            </div>
         </li>
     </ul>
 </nav>
@@ -275,6 +294,37 @@
             <!-- Riempito dinamicamente in base a HTTP vs HTTPS -->
         </div>
         <button onclick="closeMicGuide()" class="w-full py-2.5 rounded-full bg-[#416656] text-white text-[13px] font-semibold active:scale-95 shadow-sm">Chiudi</button>
+    </div>
+</div>
+
+<!-- MODAL NOTAIO LEDGER AUTOMATICO -->
+<div id="notary-modal" class="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white/95 backdrop-blur-2xl rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-[#d8e3fb] text-left flex flex-col gap-3.5 animate-fade-in">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[#416656] font-bold text-[15px]">
+                <span class="material-symbols-outlined text-[20px] text-amber-600">history_edu</span>
+                <span id="notary-modal-title" data-i18n="notary_modal_title">Notarizza nel Registro Storico</span>
+            </div>
+            <button onclick="closeNotaryModal()" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 font-bold active:scale-90">✕</button>
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-500" data-i18n="notary_event_label">Evento / Titolo:</label>
+            <input id="notary-event-input" type="text" value="Aggiunta MCP Pydantic & Shield Sicurezza" class="w-full bg-white border border-[#d8e3fb] rounded-xl px-3 py-2 text-[12px] font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#416656]/50">
+            
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-500" data-i18n="notary_detail_label">Dettaglio / Modifiche:</label>
+            <textarea id="notary-detail-input" rows="3" class="w-full bg-white border border-[#d8e3fb] rounded-xl p-2.5 text-[11px] text-gray-700 font-mono focus:outline-none focus:ring-2 focus:ring-[#416656]/50 resize-none">Implementata validazione Pydantic per bot blocker, gestione token a tempo costante, sessione Shield Sicurezza VPS, bilinguismo IT/DE e monitoraggio porte.</textarea>
+            
+            <p id="notary-status-msg" class="text-[11px] min-h-[16px] text-gray-500 font-medium"></p>
+        </div>
+        <div class="flex gap-2 pt-1">
+            <button onclick="submitNotaryEvent()" id="btn-submit-notary" class="flex-1 py-2.5 rounded-xl bg-[#416656] hover:bg-[#345245] text-white text-[12px] font-bold shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">verified</span>
+                <span data-i18n="notary_submit_btn">Notarizza Ora</span>
+            </button>
+            <a href="https://t.me/+QkBe3QGC71dlYmRi" target="_blank" class="px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[12px] font-semibold flex items-center justify-center transition-all active:scale-95" title="Apri Canale">
+                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -343,6 +393,9 @@
         <a href="/console" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-[#7c3aed] active:scale-90 transition-colors" title="Console Logs">
             <span class="material-symbols-outlined text-[24px]">terminal</span>
         </a>
+        <a href="/security" class="flex flex-col items-center justify-center text-[#4b5563] p-2.5 hover:text-emerald-600 active:scale-90 transition-colors" title="Shield Sicurezza">
+            <span class="material-symbols-outlined text-[24px]">shield</span>
+        </a>
     </nav>
 </div>
 
@@ -358,11 +411,18 @@
             nav_chat: "Chat",
             nav_hardware: "Stato Hardware",
             nav_neural_map: "Mappatura Neurale",
-            nav_console: "Console Terminale",
-            nav_telegram: "Canale Telegram",
             nav_orchestra: "Orchestra & MCP",
-            nav_telegram_bot: "Bot Telegram (@<YOUR_TELEGRAM_BOT>)",
+            nav_console: "Console Terminale",
+            nav_security: "Shield Sicurezza",
+            nav_telegram: "Canale Telegram",
+            nav_telegram_bot: "Bot Telegram (@Simbio_imput_bot)",
             nav_ledger: "Registro Canale Ledger",
+            notary_modal_title: "Notarizza nel Registro Storico",
+            notary_event_label: "Evento / Titolo:",
+            notary_detail_label: "Dettaglio / Modifiche:",
+            notary_submit_btn: "Notarizza Ora",
+            notary_success: "✅ Evento registrato nel diario e sul Canale Ledger!",
+            notary_error: "Errore notarizzazione: ",
             error_net: "Errore di connessione con il nucleo VPS.",
             sessions_header: "Storico Conversazioni",
             sessions_empty: "Nessuna conversazione archiviata",
@@ -380,11 +440,18 @@
             nav_chat: "Chat",
             nav_hardware: "Hardware-Status",
             nav_neural_map: "Neuronale Kartierung",
-            nav_console: "Terminal-Konsole",
-            nav_telegram: "Telegram-Kanal",
             nav_orchestra: "Orchester & MCP",
-            nav_telegram_bot: "Telegram-Bot (@<YOUR_TELEGRAM_BOT>)",
+            nav_console: "Terminal-Konsole",
+            nav_security: "VPS Sicherheits-Shield",
+            nav_telegram: "Telegram-Kanal",
+            nav_telegram_bot: "Telegram-Bot (@Simbio_imput_bot)",
             nav_ledger: "Ledger-Kanal Register",
+            notary_modal_title: "Im Ledger notarisieren",
+            notary_event_label: "Ereignis / Titel:",
+            notary_detail_label: "Details / Änderungen:",
+            notary_submit_btn: "Jetzt notarisieren",
+            notary_success: "✅ Ereignis im Tagebuch und im Ledger-Kanal notariert!",
+            notary_error: "Fehler bei der Notarisierung: ",
             error_net: "Verbindungsfehler mit dem VPS-Kern.",
             sessions_header: "Chat-Verlauf",
             sessions_empty: "Keine archivierten Unterhaltungen",
@@ -395,8 +462,19 @@
     };
 
     let currentLang = localStorage.getItem('simbio_lang') || 'it';
+    function getStoredToken() {
+        let t = localStorage.getItem('simbio_token') || localStorage.getItem('simbio_api_key');
+        if (!t) {
+            t = prompt('Inserisci la chiave API Simbio / Enter Simbio API Key:');
+            if (t) {
+                t = t.trim();
+                localStorage.setItem('simbio_token', t);
+            }
+        }
+        return t || '';
+    }
+    const API_KEY = getStoredToken();
     let currentModelMode = localStorage.getItem('simbio_model_mode') || 'lite';
-    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
     const API_BASE_URL = window.location.origin;
 
     // STRUTTURA MEMORIA CHAT & SESSIONI
@@ -599,7 +677,7 @@
                     </p>
                     <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 text-center flex flex-col gap-2.5">
                         <span class="text-[12px] text-[#204936] font-semibold">È attivo l'indirizzo sicuro certificato SSL Let's Encrypt:</span>
-                        <a href="https://<YOUR_VPS_DOMAIN_OR_IP>" class="w-full py-2.5 bg-[#416656] hover:bg-[#345245] text-white rounded-xl text-[13px] font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <a href="https://${window.location.hostname}" class="w-full py-2.5 bg-[#416656] hover:bg-[#345245] text-white rounded-xl text-[13px] font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
                             <span class="material-symbols-outlined text-[18px]">lock</span>
                             <span>Passa a HTTPS Sicuro</span>
                         </a>
@@ -633,6 +711,84 @@
     function closeMicGuide() {
         const modal = document.getElementById('mic-guide-modal');
         if (modal) modal.classList.add('hidden');
+    }
+
+    // GESTIONE MODAL NOTAIO LEDGER
+    function openNotaryModal() {
+        const modal = document.getElementById('notary-modal');
+        const statusMsg = document.getElementById('notary-status-msg');
+        if (statusMsg) statusMsg.innerText = '';
+        if (modal) modal.classList.remove('hidden');
+        // Chiudi drawer
+        const drawer = document.getElementById('drawer');
+        if (drawer && !drawer.classList.contains('-translate-x-full')) toggleDrawer();
+    }
+
+    function closeNotaryModal() {
+        const modal = document.getElementById('notary-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitNotaryEvent() {
+        const evInput = document.getElementById('notary-event-input');
+        const detInput = document.getElementById('notary-detail-input');
+        const statusMsg = document.getElementById('notary-status-msg');
+        const submitBtn = document.getElementById('btn-submit-notary');
+        
+        const evento = (evInput ? evInput.value : '').trim();
+        const dettaglio = (detInput ? detInput.value : '').trim();
+
+        if (!evento || !dettaglio) {
+            if (statusMsg) {
+                statusMsg.innerText = currentLang === 'de' ? 'Bitte Titel und Details ausfüllen.' : 'Inserisci titolo e dettagli.';
+                statusMsg.className = 'text-[11px] text-red-600 font-semibold';
+            }
+            return;
+        }
+
+        if (statusMsg) {
+            statusMsg.innerText = currentLang === 'de' ? 'Notarisierung im Gange...' : 'Registrazione notaio in corso...';
+            statusMsg.className = 'text-[11px] text-blue-600 font-semibold';
+        }
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/api/v1/telegram/log`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    evento: evento,
+                    dettaglio: dettaglio,
+                    categoria: "NOTAIO_LEDGER"
+                })
+            });
+
+            const res = await resp.json();
+            if (resp.ok) {
+                if (statusMsg) {
+                    statusMsg.innerText = I18N[currentLang].notary_success;
+                    statusMsg.className = 'text-[11px] text-emerald-600 font-bold';
+                }
+                setTimeout(() => {
+                    closeNotaryModal();
+                }, 1800);
+            } else {
+                if (statusMsg) {
+                    statusMsg.innerText = I18N[currentLang].notary_error + (res.detail || res.message || 'Errore');
+                    statusMsg.className = 'text-[11px] text-red-600 font-bold';
+                }
+            }
+        } catch(err) {
+            if (statusMsg) {
+                statusMsg.innerText = I18N[currentLang].notary_error + err;
+                statusMsg.className = 'text-[11px] text-red-600 font-bold';
+            }
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
     }
 
     function copyHostAddress(btn) {
@@ -1284,6 +1440,15 @@
     }
 
     initApp();
+
+    // Registrazione Service Worker per PWA nativa senza barra URL
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[PWA] Service Worker attivo:', reg.scope))
+                .catch(err => console.warn('[PWA] Service Worker registrazione fallita:', err));
+        });
+    }
 </script>
 </body>
 </html>

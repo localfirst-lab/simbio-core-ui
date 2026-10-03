@@ -84,9 +84,22 @@
 - Dedicated visual matrix showing specialized model assignments (Planner, Code Engineer, Compliance Auditor, Gatekeeper).
 - Model Context Protocol (MCP) and JSON tool-use readiness.
 
-### 6. 🛡️ Load-Bearing Core Integrity (`core_integrity.py`)
+### 6. 🛡️ Autonomous Security Shield & Firewall Agent (Pydantic Protected)
+- **24/7 Background Sentinel Daemon** (`scripts/vps_monitor_agent.py`): Continuous monitoring of SSH authentication logs (`/var/log/auth.log`) and active network sockets.
+- **Kernel-Level Mitigation**: Automatic, zero-delay execution of Linux `iptables` DROP rules against brute-force intrusion and fictitious user bot-scans.
+- **Pydantic Validation**: All IP operations and unban requests are strongly validated through Pydantic schemas, enforcing immutable whitelists to eliminate self-lockouts.
+- **Live Visual Dashboard** (`/security`): Real-time attack telemetry, interactive ban/unban controls, and dynamic bicultural localization (IT/DE) of security reasons.
+
+### 7. 💻 Interactive Mobile Bash Console (`/console`)
+- **Direct Smartphone CLI**: Execute authenticated shell and diagnostic commands (`htop`, `systemctl status`, `iptables -L`) straight from your mobile PWA.
+- **Constant-Time Verification**: High-security token gating prevents timing attacks while executing shell calls securely over HTTPS.
+
+### 8. 📜 Sovereign Telegram Ledger & Bordbuch Notary
+- **1-Click Architectural Notarization**: Directly record milestones and security updates from the drawer menu into both persistent local ledger files (`diario_storico.json`/`.txt`) and an off-site Telegram broadcast channel.
+
+### 9. 🔒 Load-Bearing Core Integrity (`core_integrity.py`)
 - Employs zero-trust cryptographic root anchoring (`_SYS_ENTROPY_VECTOR`).
-- **Load-Bearing Dependency**: The authentication and session layers derive internal cryptographic salts directly from the author's mathematical anchor. If the file is altered or removed, the gateway terminates immediately (`RuntimeError: FATAL: Core integrity compromised`).
+- **Load-Bearing Dependency**: Authentication and session layers derive internal cryptographic salts directly from the author's mathematical anchor. If the file is altered or removed, the gateway terminates immediately (`RuntimeError: FATAL: Core integrity compromised`).
 
 ---
 
@@ -164,29 +177,35 @@ simbio-core-ui/
 ├── core_integrity.py      # Zero-trust cryptographic anchor & load-bearing author signature
 ├── auth.py                # Constant-time token verification & timing attack shield
 ├── config.py              # Dynamic environment loader (.env)
+├── config_monitor.example.json # Template for autonomous security agent configuration
 ├── database.py            # SQLite multi-session chat engine (WAL mode)
 ├── main.py                # FastAPI ASGI application & static route dispatcher
 ├── deploy_api.sh          # One-click systemd daemon installer
 ├── test_api.py            # Local & remote API validation test harness
 ├── requirements.txt       # Production dependencies
 ├── .env.example           # Sanitized environment configuration template
-├── .gitignore             # Comprehensive secret and database exclusion
+├── .gitignore             # Comprehensive secret, state, and database exclusion
 ├── LICENSE                # Community Non-Commercial Research License
 ├── routes/
 │   ├── chat.py            # SSE streaming completions & Ollama router
-│   ├── system.py          # Real-time hardware telemetry & journalctl streamer
+│   ├── security.py        # Pydantic IP validator, iptables executor & security stats
+│   ├── system.py          # Real-time hardware telemetry & bash command execution
 │   ├── sessions.py        # Chat session lifecycle (create, rename, delete)
 │   ├── media.py           # Multimodal image upload handler
-│   └── telegram.py        # Sovereign Telegram notary dispatcher
+│   └── telegram.py        # Sovereign Telegram notary & local diary sync
+├── scripts/
+│   └── vps_monitor_agent.py # 24/7 autonomous security sentinel & firewall drop agent
 ├── static/
 │   ├── manifest.json      # PWA configuration manifest
+│   ├── sw.js              # Service Worker for native standalone PWA experience
 │   ├── simbio_icon.png    # High-resolution mobile application icon
 │   └── uploads/           # Ephemeral media upload directory (.gitkeep)
 └── templates/
-    ├── index.html         # Main Mobile PWA Chat interface (IT/DE)
+    ├── index.html         # Main Mobile PWA Chat interface (IT/DE) & Notary Modal
     ├── hardware.html      # Hardware telemetry & sensor monitor
-    ├── console.html       # Live log terminal & journalctl filter
-    └── orchestra.html     # Model orchestration & MCP matrix
+    ├── console.html       # Live log terminal & interactive bash console
+    ├── orchestra.html     # Model orchestration & MCP matrix
+    └── security.html      # VPS Security Shield & IP ban management dashboard (IT/DE)
 ```
 
 ---

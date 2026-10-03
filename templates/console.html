@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html class="light" lang="it">
 <head>
-    <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0b0f17">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Simbio OS">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/static/icon-512.png">
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-    <title>Simbio - Console Terminale</title>
+    <title>Simbio - Console & Terminale Linux</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -40,43 +44,80 @@
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
         </a>
 
-        <!-- MANIGLIA CHIUDI TERMINALE -->
-        <a href="/" id="swipe-handle-zone" class="flex flex-col items-center py-1.5 px-6 cursor-pointer active:scale-95 transition-all text-center select-none" title="Chiudi Console">
-            <div class="drag-handle mb-1"></div>
-            <span id="txt-swipe-down" class="text-[9px] uppercase tracking-wider text-gray-400 font-bold hover:text-white transition-colors">Chiudi</span>
-        </a>
+        <!-- SELETTORE MODALITÀ (LOG STREAM / BASH SHELL) -->
+        <div class="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+            <button id="tab-btn-logs" onclick="switchConsoleMode('logs')" class="px-2.5 sm:px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" data-i18n="tab_logs">
+                Log Stream
+            </button>
+            <button id="tab-btn-shell" onclick="switchConsoleMode('shell')" class="px-2.5 sm:px-3 py-1 rounded-lg text-[11px] font-bold transition-all text-gray-400 hover:text-white" data-i18n="tab_shell">
+                Terminale Bash
+            </button>
+        </div>
         
-        <!-- Pulsanti Pulisci e Scarica -->
+        <!-- Pulsanti Utilità & Switcher Lingua -->
         <div class="flex items-center gap-1.5">
-            <button id="btn-clear" onclick="clearLogs()" class="text-[10px] uppercase font-bold text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg active:scale-95 transition-all">Pulisci</button>
-            <button id="btn-download" onclick="downloadLogs()" class="text-[10px] uppercase font-bold text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg active:scale-95 transition-all">Scarica</button>
+            <div class="flex items-center bg-white/10 rounded-full border border-white/20 p-0.5 text-[10px] font-bold">
+                <button id="lang-it-btn" onclick="setConsoleLang('it')" class="px-2 py-0.5 rounded-full transition-all text-[#4ade80] bg-emerald-500/20">IT</button>
+                <button id="lang-de-btn" onclick="setConsoleLang('de')" class="px-2 py-0.5 rounded-full transition-all text-gray-400 hover:text-white">DE</button>
+            </div>
+            <button id="btn-clear" onclick="handleClearCurrent()" class="text-[10px] uppercase font-bold text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg active:scale-95 transition-all" data-i18n="btn_clear">Pulisci</button>
         </div>
     </div>
 
-    <!-- SOTTO-BARRA FILTRI & STATO HARDWARE -->
-    <div class="px-3 py-1.5 border-t border-white/5 flex items-center justify-between gap-2 overflow-x-auto text-[11px]">
-        <!-- Filtri Servizio -->
+    <!-- SOTTO-BARRA FILTRI LOG (VISIBILE SOLO IN MODALITÀ LOG STREAM) -->
+    <div id="sub-bar-logs" class="px-3 py-1.5 border-t border-white/5 flex items-center justify-between gap-2 overflow-x-auto text-[11px]">
         <div class="flex items-center gap-1 flex-shrink-0">
-            <button onclick="setLogFilter('all')" id="flt-all" class="px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">TUTTI</button>
+            <button onclick="setLogFilter('all')" id="flt-all" class="px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" data-i18n="flt_all">TUTTI</button>
             <button onclick="setLogFilter('api')" id="flt-api" class="px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">API</button>
             <button onclick="setLogFilter('ollama')" id="flt-ollama" class="px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">OLLAMA</button>
-            <button onclick="setLogFilter('errors')" id="flt-errors" class="px-2 py-0.5 rounded-md font-bold transition-all text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30">ERRORI 🔴</button>
+            <button onclick="setLogFilter('errors')" id="flt-errors" class="px-2 py-0.5 rounded-md font-bold transition-all text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30" data-i18n="flt_errors">ERRORI 🔴</button>
         </div>
-        <!-- Hardware Mini Ticker -->
         <div id="hw-mini-ticker" class="text-[10px] font-mono text-gray-400 truncate flex items-center gap-1.5 flex-shrink-0">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span id="hw-stats-text">Uptime: -- | RAM: -- | CPU: --</span>
         </div>
     </div>
+
+    <!-- SOTTO-BARRA COMANDI RAPIDI (VISIBILE IN MODALITÀ BASH SHELL) -->
+    <div id="sub-bar-shell" class="hidden px-3 py-1.5 border-t border-white/5 flex items-center gap-1.5 overflow-x-auto text-[10px] font-mono">
+        <span class="text-gray-500 flex-shrink-0" data-i18n="quick_label">Rapidi:</span>
+        <button onclick="runQuickCmd('python3 /root/vps_monitor/vps_monitor_agent.py --status')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-emerald-300 flex-shrink-0">shield status</button>
+        <button onclick="runQuickCmd('iptables -L INPUT -n')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-blue-300 flex-shrink-0">iptables drops</button>
+        <button onclick="runQuickCmd('systemctl status simbio-api ollama vps-shield --no-pager')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-purple-300 flex-shrink-0">servizi</button>
+        <button onclick="runQuickCmd('free -h && df -h / && uptime')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-amber-300 flex-shrink-0">risorse</button>
+        <button onclick="runQuickCmd('who && ss -tp state established')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-cyan-300 flex-shrink-0">connessioni</button>
+    </div>
 </header>
 
-<!-- AREA LOG (CON SPAZIO SOPRA E SOTTO PER LE BARRE) -->
-<main class="flex-1 w-full pt-[94px] pb-[85px] overflow-y-auto px-3 sm:px-5 text-[11px] sm:text-[12px] terminal-text flex flex-col gap-1.5 select-text font-mono" id="log-container">
+<!-- AREA 1: STREAM DEI LOG (DEFAULT) -->
+<main id="log-container" class="flex-1 w-full pt-[94px] pb-[85px] overflow-y-auto px-3 sm:px-5 text-[11px] sm:text-[12px] terminal-text flex flex-col gap-1.5 select-text font-mono">
     <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
-        <div class="terminal-text-dim text-[11px]" id="init-log-text">Inizializzazione Simbio Gateway & Journalctl Streamer... [OK]</div>
-        <div class="text-white font-bold text-[12px]">=== SIMBIO CORE LIVE TERMINAL (VPS VPS_HOST) ===</div>
+        <div class="terminal-text-dim text-[11px]" id="init-log-text" data-i18n="init_log">Inizializzazione Simbio Gateway & Journalctl Streamer... [OK]</div>
+        <div class="text-white font-bold text-[12px]">=== SIMBIO CORE LIVE TERMINAL ===</div>
     </div>
 </main>
+
+<!-- AREA 2: TERMINALE BASH INTERATTIVO -->
+<main id="shell-container" class="hidden flex-1 w-full pt-[94px] pb-[135px] overflow-y-auto px-3 sm:px-5 text-[11px] sm:text-[12px] flex flex-col gap-2 select-text font-mono">
+    <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
+        <div class="text-emerald-400 font-bold text-[12px]" data-i18n="shell_title">=== BASH INTERATTIVO LINUX VPS (Ubuntu / Debian) ===</div>
+        <div class="text-gray-400 text-[10px]" data-i18n="shell_sub">Autenticato con Simbio API Token. Esecuzione comandi diretta da smartphone.</div>
+    </div>
+    <div id="shell-history" class="flex flex-col gap-2">
+        <!-- Cronologia comandi e output -->
+        <div class="text-gray-400 italic" id="shell-hint-text" data-i18n="shell_hint">Digita un comando qui sotto o usa i bottoni rapidi...</div>
+    </div>
+</main>
+
+<!-- BARRA DI INPUT BASH (ATTIVA IN MODALITÀ SHELL) -->
+<div id="shell-input-bar" class="hidden fixed bottom-[65px] left-0 w-full z-40 bg-[#0f172a]/95 backdrop-blur-xl border-t border-white/15 px-3 py-2 flex items-center gap-2">
+    <span id="shell-prompt-tag" class="text-[11px] font-mono text-emerald-400 font-bold flex-shrink-0">root@vps:~#</span>
+    <input id="bash-cmd-input" type="text" placeholder="es. ls -la, htop, cat /etc/..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="flex-1 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-[12px] font-mono text-green-300 focus:outline-none focus:ring-1 focus:ring-emerald-400">
+    <button onclick="executeBashCommand()" id="btn-run-cmd" class="bg-emerald-600 active:bg-emerald-700 hover:bg-emerald-500 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm active:scale-95 transition-all">
+        <span data-i18n="btn_send">Invia</span>
+        <span class="material-symbols-outlined text-[14px]">send</span>
+    </button>
+</div>
 
 <!-- BARRA INFERIORE DI NAVIGAZIONE PER CAMBIARE SESSIONE -->
 <footer class="fixed bottom-0 left-0 w-full z-50 bg-[#0f172a]/95 backdrop-blur-2xl border-t border-white/15 shadow-2xl flex justify-center py-2 px-4">
@@ -93,180 +134,334 @@
         <a href="/console" class="flex flex-col items-center justify-center bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 rounded-full p-2 active:scale-90 shadow-sm transition-all" title="Terminal">
             <span class="material-symbols-outlined text-[24px]">terminal</span>
         </a>
+        <a href="/security" class="flex flex-col items-center justify-center text-gray-400 p-2 hover:text-emerald-400 active:scale-90 transition-colors" title="Shield Sicurezza">
+            <span class="material-symbols-outlined text-[24px]">shield</span>
+        </a>
     </nav>
 </footer>
 
-<script>
-    const currentLang = localStorage.getItem('simbio_lang') || 'it';
-    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
+    function getStoredToken() {
+        let t = localStorage.getItem('simbio_token') || localStorage.getItem('simbio_api_key');
+        if (!t) {
+            t = prompt('Inserisci la chiave API Simbio / Enter Simbio API Key:');
+            if (t) {
+                t = t.trim();
+                localStorage.setItem('simbio_token', t);
+            }
+        }
+        return t || '';
+    }
+    const API_KEY = getStoredToken();
     const API_BASE_URL = window.location.origin;
 
+    let currentMode = 'logs'; // 'logs' o 'shell'
     let activeFilter = 'all';
     let seenLogKeys = new Set();
-    let autoScroll = true;
+    let currentCwd = '/root';
 
-    if (currentLang === 'de') {
-        document.title = "Simbio - Terminal-Konsole";
-        document.getElementById('btn-clear').innerText = "Löschen";
-        document.getElementById('btn-download').innerText = "Download";
-        const swipeTxt = document.getElementById('txt-swipe-down');
-        if (swipeTxt) swipeTxt.innerText = "Schließen";
-        const fltAll = document.getElementById('flt-all');
-        if (fltAll) fltAll.innerText = "ALLE";
-        const fltErr = document.getElementById('flt-errors');
-        if (fltErr) fltErr.innerText = "FEHLER 🔴";
-        const initText = document.getElementById('init-log-text');
-        if (initText) initText.innerText = "Initialisierung Simbio Gateway & Journalctl Streamer... [OK]";
-    }
-
-    // Swipe down to close on mobile touch
-    let touchStartY = 0;
-    const handleZone = document.getElementById('swipe-handle-zone');
-    if (handleZone) {
-        handleZone.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            window.location.href = '/';
-        });
-    }
-    window.addEventListener('touchstart', (e) => {
-        if (e.touches && e.touches[0].clientY < 85) touchStartY = e.touches[0].clientY;
-        else touchStartY = 0;
-    }, { passive: true });
-    window.addEventListener('touchend', (e) => {
-        if (touchStartY > 0 && e.changedTouches && (e.changedTouches[0].clientY - touchStartY > 60)) {
-            window.location.href = '/';
+    const I18N_CONSOLE = {
+        it: {
+            title: "Simbio - Console Terminale",
+            tab_logs: "Log Stream",
+            tab_shell: "Terminale Bash",
+            btn_clear: "Pulisci",
+            flt_all: "TUTTI",
+            flt_errors: "ERRORI 🔴",
+            quick_label: "Rapidi:",
+            init_log: "Inizializzazione Simbio Gateway & Journalctl Streamer... [OK]",
+            shell_title: "=== BASH INTERATTIVO LINUX VPS (Ubuntu / Debian) ===",
+            shell_sub: "Autenticato con Simbio API Token. Esecuzione comandi diretta da smartphone.",
+            shell_hint: "Digita un comando qui sotto o usa i bottoni rapidi...",
+            shell_cleared: "Terminale pulito. Digita un comando...",
+            input_placeholder: "es. ls -la, htop, cat /etc/...",
+            btn_send: "Invia",
+            cleared_log: "Registro pulito. In attesa di nuovi log...",
+            uptime_label: "Up",
+            running_cmd: "Esecuzione in corso...",
+            err_cmd: "Errore esecuzione comando: "
+        },
+        de: {
+            title: "Simbio - Terminal-Konsole",
+            tab_logs: "Log-Stream",
+            tab_shell: "Bash-Terminal",
+            btn_clear: "Löschen",
+            flt_all: "ALLE",
+            flt_errors: "FEHLER 🔴",
+            quick_label: "Schnell:",
+            init_log: "Initialisierung Simbio Gateway & Journalctl Streamer... [OK]",
+            shell_title: "=== INTERAKTIVES LINUX VPS BASH (Ubuntu / Debian) ===",
+            shell_sub: "Authentifiziert mit Simbio API Token. Direkte Befehlsausführung vom Smartphone.",
+            shell_hint: "Geben Sie unten einen Befehl ein oder nutzen Sie die Schnelltasten...",
+            shell_cleared: "Terminal bereinigt. Befehl eingeben...",
+            input_placeholder: "z.B. ls -la, htop, cat /etc/...",
+            btn_send: "Senden",
+            cleared_log: "Protokoll bereinigt. Warte auf neue Logs...",
+            uptime_label: "Laufzeit",
+            running_cmd: "Befehl wird ausgeführt...",
+            err_cmd: "Fehler bei der Ausführung: "
         }
-    }, { passive: true });
+    };
 
-    function setLogFilter(filter) {
-        activeFilter = filter;
-        ['all', 'api', 'ollama', 'errors'].forEach(f => {
-            const btn = document.getElementById(`flt-${f}`);
-            if (!btn) return;
-            if (f === filter) {
-                if (f === 'errors') {
-                    btn.className = "px-2 py-0.5 rounded-md font-bold transition-all bg-red-500/20 text-red-400 border border-red-500/40";
-                } else {
-                    btn.className = "px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-                }
-            } else {
-                btn.className = f === 'errors' 
-                    ? "px-2 py-0.5 rounded-md font-bold transition-all text-red-400 hover:bg-red-500/10 border border-transparent"
-                    : "px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5";
+    function setConsoleLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('simbio_lang', lang);
+
+        const itBtn = document.getElementById('lang-it-btn');
+        const deBtn = document.getElementById('lang-de-btn');
+        if (lang === 'it') {
+            if (itBtn) itBtn.className = "px-2 py-0.5 rounded-full transition-all text-[#4ade80] bg-emerald-500/20";
+            if (deBtn) deBtn.className = "px-2 py-0.5 rounded-full transition-all text-gray-400 hover:text-white";
+        } else {
+            if (deBtn) deBtn.className = "px-2 py-0.5 rounded-full transition-all text-[#4ade80] bg-emerald-500/20";
+            if (itBtn) itBtn.className = "px-2 py-0.5 rounded-full transition-all text-gray-400 hover:text-white";
+        }
+
+        document.title = I18N_CONSOLE[lang].title;
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (I18N_CONSOLE[lang] && I18N_CONSOLE[lang][key]) {
+                el.innerText = I18N_CONSOLE[lang][key];
             }
         });
 
-        // Reset buffer e ricarica
-        seenLogKeys.clear();
-        const filterTitle = filter === 'all' && currentLang === 'de' ? 'ALLE' : (filter === 'errors' && currentLang === 'de' ? 'FEHLER' : filter.toUpperCase());
-        const filterLabel = currentLang === 'de' ? 'Angewendeter Filter' : 'Filtro applicato';
-        document.getElementById('log-container').innerHTML = `
-            <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
-                <div class="terminal-text-dim text-[11px]">${filterLabel}: [${filterTitle}]</div>
+        const inputCmd = document.getElementById('bash-cmd-input');
+        if (inputCmd) inputCmd.placeholder = I18N_CONSOLE[lang].input_placeholder;
+    }
+
+    // -------------------------------------------------------------
+    // SWITCH TRA LOG STREAM E TERMINALE BASH
+    // -------------------------------------------------------------
+    function switchConsoleMode(mode) {
+        currentMode = mode;
+        const btnLogs = document.getElementById('tab-btn-logs');
+        const btnShell = document.getElementById('tab-btn-shell');
+        const viewLogs = document.getElementById('log-container');
+        const viewShell = document.getElementById('shell-container');
+        const barLogs = document.getElementById('sub-bar-logs');
+        const barShell = document.getElementById('sub-bar-shell');
+        const inputBar = document.getElementById('shell-input-bar');
+
+        if (mode === 'logs') {
+            btnLogs.className = "px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+            btnShell.className = "px-3 py-1 rounded-lg text-[11px] font-bold transition-all text-gray-400 hover:text-white";
+            viewLogs.classList.remove('hidden');
+            viewShell.classList.add('hidden');
+            barLogs.classList.remove('hidden');
+            barShell.classList.add('hidden');
+            inputBar.classList.add('hidden');
+        } else {
+            btnShell.className = "px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+            btnLogs.className = "px-3 py-1 rounded-lg text-[11px] font-bold transition-all text-gray-400 hover:text-white";
+            viewShell.classList.remove('hidden');
+            viewLogs.classList.add('hidden');
+            barShell.classList.remove('hidden');
+            barLogs.classList.add('hidden');
+            inputBar.classList.remove('hidden');
+            document.getElementById('bash-cmd-input').focus();
+        }
+    }
+
+    function handleClearCurrent() {
+        if (currentMode === 'logs') {
+            clearLogs();
+        } else {
+            document.getElementById('shell-history').innerHTML = '<div class="text-gray-400 italic">Terminale pulito. Digita un comando...</div>';
+        }
+    }
+
+    // -------------------------------------------------------------
+    // ESECUZIONE COMANDI BASH
+    // -------------------------------------------------------------
+    async function executeBashCommand(customCmd) {
+        const input = document.getElementById('bash-cmd-input');
+        const cmd = customCmd || input.value.trim();
+        if (!cmd) return;
+
+        if (cmd === 'clear') {
+            handleClearCurrent();
+            input.value = '';
+            return;
+        }
+
+        const historyDiv = document.getElementById('shell-history');
+        const cmdBlock = document.createElement('div');
+        cmdBlock.className = "flex flex-col gap-1 p-2 rounded-lg bg-black/40 border border-white/5 font-mono";
+
+        // Intestazione comando
+        cmdBlock.innerHTML = `
+            <div class="flex items-center justify-between text-cyan-300 font-bold text-[12px]">
+                <span>root@vps:${currentCwd}# ${escapeHtml(cmd)}</span>
+                <span class="text-[10px] text-gray-500 animate-pulse" id="spinner-${Date.now()}">In esecuzione...</span>
             </div>
+            <div class="text-gray-400 text-[11px] whitespace-pre-wrap mt-1" id="out-content">...</div>
         `;
+        historyDiv.appendChild(cmdBlock);
+        input.value = '';
+
+        // Auto-scroll in basso
+        const shellMain = document.getElementById('shell-container');
+        shellMain.scrollTop = shellMain.scrollHeight;
+
+        try {
+            const resp = await fetch('/api/v1/system/bash', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    command: cmd,
+                    cwd: currentCwd,
+                    timeout: 35
+                })
+            });
+
+            const res = await resp.json();
+            const outDiv = cmdBlock.querySelector('#out-content');
+            const spinner = cmdBlock.querySelector('span[id^="spinner-"]');
+
+            if (spinner) {
+                spinner.innerText = `${res.duration_ms || 0}ms [code: ${res.returncode}]`;
+                spinner.classList.remove('animate-pulse');
+                spinner.className = res.returncode === 0 ? "text-[10px] text-emerald-400 font-bold" : "text-[10px] text-red-400 font-bold";
+            }
+
+            if (res.cwd) {
+                currentCwd = res.cwd;
+                document.getElementById('shell-prompt-tag').innerText = `root@vps:${currentCwd}#`;
+            }
+
+            let outputHtml = '';
+            if (res.stdout) {
+                outputHtml += `<span class="text-green-300">${escapeHtml(res.stdout)}</span>`;
+            }
+            if (res.stderr) {
+                outputHtml += `<span class="text-rose-400">${escapeHtml(res.stderr)}</span>`;
+            }
+            if (!res.stdout && !res.stderr) {
+                outputHtml = `<span class="text-gray-500 italic">(Nessun output restituito, comando completato)</span>`;
+            }
+
+            outDiv.innerHTML = outputHtml;
+            shellMain.scrollTop = shellMain.scrollHeight;
+
+        } catch(e) {
+            cmdBlock.querySelector('#out-content').innerHTML = `<span class="text-rose-400">Errore di comunicazione: ${escapeHtml(String(e))}</span>`;
+        }
+    }
+
+    function runQuickCmd(cmd) {
+        document.getElementById('bash-cmd-input').value = cmd;
+        executeBashCommand(cmd);
+    }
+
+    // Invio con tasto Enter
+    document.getElementById('bash-cmd-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            executeBashCommand();
+        }
+    });
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // -------------------------------------------------------------
+    // LOG STREAMING ESISTENTE
+    // -------------------------------------------------------------
+    function setLogFilter(service) {
+        activeFilter = service;
+        ['all', 'api', 'ollama', 'errors'].forEach(k => {
+            const btn = document.getElementById('flt-' + k);
+            if (!btn) return;
+            if (k === service) {
+                btn.className = "px-2 py-0.5 rounded-md font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+            } else {
+                btn.className = "px-2 py-0.5 rounded-md font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5";
+            }
+        });
+        clearLogs();
         fetchRealLogs();
     }
 
     function clearLogs() {
-        seenLogKeys.clear();
-        document.getElementById('log-container').innerHTML = '';
-    }
-
-    function appendLogEntry(item) {
-        const logBox = document.getElementById('log-container');
-        if (!logBox) return;
-
-        const key = (item.ts || '') + '|' + (item.raw || item.msg);
-        if (seenLogKeys.has(key)) return;
-        seenLogKeys.add(key);
-
-        const line = document.createElement('div');
-        const isError = item.lvl === 'ERROR';
-        const isWarn = item.lvl === 'WARN';
-
-        line.className = `flex gap-2 sm:gap-3 leading-relaxed break-words py-0.5 px-1.5 rounded transition-all ${
-            isError ? 'bg-red-950/40 text-red-300 border-l-2 border-red-500' :
-            isWarn ? 'bg-amber-950/20 text-amber-300' :
-            'hover:bg-white/5 text-gray-200'
-        }`;
-
-        let srcBadgeColor = 'text-cyan-400 bg-cyan-950/40 border border-cyan-800/50';
-        if (item.src === 'OLLAMA') srcBadgeColor = 'text-purple-300 bg-purple-950/40 border border-purple-800/50';
-        else if (item.src === 'SYS') srcBadgeColor = 'text-gray-400 bg-gray-900 border border-gray-700';
-
-        const tsDisplay = item.ts || new Date().toLocaleTimeString();
-
-        line.innerHTML = `
-            <span class="terminal-text-dim flex-shrink-0 select-none">[${tsDisplay}]</span>
-            <span class="px-1 py-0.2 text-[9px] font-bold rounded flex-shrink-0 ${srcBadgeColor}">[${item.src}]</span>
-            <span class="flex-1 ${isError ? 'font-bold text-red-300' : (isWarn ? 'text-amber-300' : 'text-emerald-300/90')}">${escapeHtml(item.msg)}</span>
+        const c = document.getElementById('log-container');
+        c.innerHTML = `
+            <div class="flex flex-col gap-0.5 mb-2 border-b border-white/10 pb-2">
+                <div class="terminal-text-dim text-[11px]">${I18N_CONSOLE[currentLang].cleared_log}</div>
+            </div>
         `;
-
-        logBox.appendChild(line);
-
-        if (autoScroll) {
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.innerText = text;
-        return div.innerHTML;
+        seenLogKeys.clear();
     }
 
     async function fetchRealLogs() {
+        if (currentMode !== 'logs') return;
         try {
-            const svcParam = activeFilter === 'errors' ? 'all' : activeFilter;
-            const lvlParam = activeFilter === 'errors' ? 'errors' : 'all';
-            const res = await fetch(`${API_BASE_URL}/api/v1/system/logs?service=${svcParam}&lines=70&level=${lvlParam}`, {
-                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            const url = `${API_BASE_URL}/api/v1/system/logs?service=${activeFilter}&lines=50`;
+            const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${API_KEY}` } });
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+            const logs = data.logs || [];
+            const container = document.getElementById('log-container');
+
+            logs.forEach(item => {
+                const uniqueKey = `${item.ts}_${item.msg.slice(0, 40)}`;
+                if (seenLogKeys.has(uniqueKey)) return;
+                seenLogKeys.add(uniqueKey);
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = "flex gap-2 items-start py-0.5 leading-relaxed break-all";
+
+                let lvlColor = "text-gray-400";
+                if (item.lvl === "ERROR") lvlColor = "text-red-400 font-bold";
+                else if (item.lvl === "WARN") lvlColor = "text-amber-400";
+
+                lineDiv.innerHTML = `
+                    <span class="text-gray-500 text-[10px] select-none flex-shrink-0">${item.ts || ''}</span>
+                    <span class="px-1 py-0.2 rounded text-[9px] font-bold bg-white/10 text-emerald-400 select-none flex-shrink-0">${item.src}</span>
+                    <span class="${lvlColor} text-[10px] font-bold select-none flex-shrink-0">${item.lvl}</span>
+                    <span class="text-gray-300 font-mono text-[11px] select-text flex-1">${escapeHtml(item.msg)}</span>
+                `;
+                container.appendChild(lineDiv);
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                if (data.logs && Array.isArray(data.logs)) {
-                    data.logs.forEach(appendLogEntry);
-                }
-            }
-        } catch (e) {
-            console.warn("Errore fetch log:", e);
-        }
+            container.scrollTop = container.scrollHeight;
+        } catch(e) {}
     }
 
     async function pollHardwareTicker() {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/v1/system/status`, {
+            const resp = await fetch(`${API_BASE_URL}/api/v1/system/status`, {
                 headers: { 'Authorization': `Bearer ${API_KEY}` }
             });
-            if (res.ok) {
-                const data = await res.json();
-                const t = data.telemetry;
-                const ticker = document.getElementById('hw-stats-text');
-                if (ticker) {
-                    const uptimeLabel = currentLang === 'de' ? 'Laufzeit' : 'Uptime';
-                    ticker.innerText = `${uptimeLabel}: ${data.uptime} | RAM: ${t.ram.used_gb}/${t.ram.total_gb}GB (${t.ram.percent}%) | CPU: ${t.cpu.percent}%`;
-                }
+            if (resp.ok) {
+                const data = await resp.json();
+                const telem = data.telemetry || {};
+                const upLabel = I18N_CONSOLE[currentLang].uptime_label;
+                const txt = `${upLabel}: ${data.uptime || '--'} | RAM: ${telem.ram?.percent || '--'}% | CPU: ${telem.cpu?.percent || '--'}%`;
+                document.getElementById('hw-stats-text').innerText = txt;
             }
-        } catch (e) {}
+        } catch(e) {}
     }
 
-    // Carica subito e imposta polling
+    // Inizializzazione lingua console
+    setConsoleLang(currentLang);
+
     fetchRealLogs();
     pollHardwareTicker();
     setInterval(fetchRealLogs, 3000);
     setInterval(pollHardwareTicker, 10000);
 
-    function downloadLogs() {
-        const logs = document.getElementById('log-container').innerText;
-        const blob = new Blob([logs], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `simbio_logs_${Date.now()}.txt`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+    // Registrazione Service Worker per PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[PWA] Service Worker attivo:', reg.scope))
+                .catch(err => console.warn('[PWA] SW error:', err));
+        });
     }
 </script>
 </body>
