@@ -172,34 +172,133 @@ def send_telegram(message: str, level: str = "INFO"):
         except Exception as e:
             log.warning(f"[Telegram] Errore invio chat {cid}: {e}")
 
+LIVE_BOARD_FILE = LOG_DIR / "live_board.json"
+
+def load_live_board_ids() -> dict:
+    if LIVE_BOARD_FILE.exists():
+        try:
+            with open(LIVE_BOARD_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_live_board_ids(data: dict):
+    try:
+        LIVE_BOARD_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(LIVE_BOARD_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        log.warning(f"[LiveBoard] Errore salvataggio {LIVE_BOARD_FILE}: {e}")
+
+def update_live_board_telegram(message: str):
+    """Aggiorna in tempo reale un UNICO messaggio fissato per chat/canale via editMessageText."""
+    tg = CFG.get("alerts", {}).get("telegram", {})
+    if not tg.get("enabled") or not HAS_REQUESTS:
+        return
+
+    token = tg.get("bot_token", "")
+    chat_ids = [tg.get("chat_id", ""), tg.get("admin_chat_id", "")]
+    chat_ids = [c for c in chat_ids if c and "INSERISCI" not in str(c)]
+
+    if not token or not chat_ids or "INSERISCI" in token:
+        return
+
+    board_ids = load_live_board_ids()
+    ts = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M:%S UTC")
+    text = (
+        f"📌 <b>VPS SHIELD — LIVE DASHBOARD DI STATO</b>\n"
+        f"🕒 <i>Ultimo aggiornamento:</i> {ts}\n\n"
+        f"{message}"
+    )
+
+    updated = False
+    for cid in set(chat_ids):
+        str_cid = str(cid)
+        mid = board_ids.get(str_cid)
+        edited_ok = False
+
+        if mid:
+            try:
+                res = requests.post(
+                    f"https://api.telegram.org/bot{token}/editMessageText",
+                    json={
+                        "chat_id": cid,
+                        "message_id": mid,
+                        "text": text,
+                        "parse_mode": "HTML"
+                    },
+                    timeout=8
+                )
+                if res.status_code == 200:
+                    edited_ok = True
+                elif "message is not modified" in res.text:
+                    edited_ok = True
+                else:
+                    log.info(f"[LiveBoard] Messaggio {mid} in {cid} non modificabile ({res.text}), ne creo uno nuovo.")
+            except Exception as e:
+                log.warning(f"[LiveBoard] Errore editMessageText su chat {cid}: {e}")
+
+        if not edited_ok:
+            try:
+                res = requests.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": cid, "text": text, "parse_mode": "HTML"},
+                    timeout=8
+                )
+                if res.status_code == 200:
+                    new_mid = res.json().get("result", {}).get("message_id")
+                    if new_mid:
+                        board_ids[str_cid] = new_mid
+                        updated = True
+                        try:
+                            requests.post(
+                                f"https://api.telegram.org/bot{token}/pinChatMessage",
+                                json={"chat_id": cid, "message_id": new_mid, "disable_notification": True},
+                                timeout=5
+                            )
+                        except Exception:
+                            pass
+            except Exception as e:
+                log.warning(f"[LiveBoard] Errore invio nuovo messaggio board per {cid}: {e}")
+
+    if updated:
+        save_live_board_ids(board_ids)
+
 def alert(message: str, level: str = "WARNING"):
     log.warning(f"[{level}] {message}")
     send_telegram(message, level)
 
 def flush_digest_if_needed(force: bool = False):
-    """Invia un unico report Telegram consolidato con tutti i bot bloccati."""
+    """Aggiorna la Bacheca Live fissata con lo stato aggiornato dei bot bloccati."""
     now = time.time()
     pending = STATE["pending_bans_digest"]
-    if not pending:
-        return
 
-    # Invia se ci sono >= 5 bot bloccati oppure sono passati 30 minuti (o se forzato)
-    if force or len(pending) >= 5 or (now - STATE["last_digest_time"] >= 1800):
+    # Aggiorna se ci sono bot bloccati pendenti oppure ogni 30 minuti di routine (o forzato)
+    if force or pending or (now - STATE["last_digest_time"] >= 1800):
         total_banned = len(STATE["already_banned_ips"])
+
+        all_banned = load_banned_ips()
+        sorted_recent = sorted(
+            [v for v in all_banned.values() if v.get("active", True)],
+            key=lambda x: x.get("banned_at", ""),
+            reverse=True
+        )[:5]
+
         lines = []
-        for item in pending[-8:]:
-            lines.append(f"• <code>{item['ip']}</code> — {item['reason']}")
-        
-        extra = f"\n<i>...e altri {len(pending)-8} bot</i>" if len(pending) > 8 else ""
-        
+        for item in sorted_recent:
+            lines.append(f"• <code>{item.get('ip', '')}</code> — {item.get('reason', 'Bot bloccato')}")
+
+        recent_block = ("\n".join(lines)) if lines else "<i>Nessun aggressore recente</i>"
+
         msg = (
-            f"🛡️ <b>REPORT BLOCCHI SHIELD FIREWALL</b>\n\n"
-            f"Bloccati <b>{len(pending)} nuovi bot</b> con <code>iptables DROP</code>:\n"
-            + "\n".join(lines) + extra + "\n\n"
+            f"🛡️ <b>STATO SHIELD FIREWALL (iptables DROP)</b>\n\n"
             f"📊 <b>Totale IP malevoli bloccati:</b> {total_banned}\n"
-            f"🟢 <b>Tuo accesso (whitelist):</b> Protetto e operativo"
+            f"🟢 <b>Tuo accesso (whitelist):</b> Protetto e operativo\n\n"
+            f"🔍 <b>Ultimi aggressori neutralizzati:</b>\n"
+            f"{recent_block}"
         )
-        send_telegram(msg, level="INFO")
+        update_live_board_telegram(msg)
         STATE["pending_bans_digest"] = []
         STATE["last_digest_time"] = now
 
