@@ -140,7 +140,14 @@
     </nav>
 </footer>
 
+<script>
+    let currentLang = localStorage.getItem('simbio_lang') || 'it';
+    const INJECTED_KEY = "{{SIMBIO_INJECTED_TOKEN}}";
     function getStoredToken() {
+        if (INJECTED_KEY && !INJECTED_KEY.startsWith("{{") && INJECTED_KEY !== "simbio_sec_default_change_me") {
+            localStorage.setItem('simbio_token', INJECTED_KEY);
+            return INJECTED_KEY;
+        }
         let t = localStorage.getItem('simbio_token') || localStorage.getItem('simbio_api_key');
         if (!t) {
             t = prompt('Inserisci la chiave API Simbio / Enter Simbio API Key:');

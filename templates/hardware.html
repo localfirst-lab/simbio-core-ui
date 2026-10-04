@@ -168,7 +168,8 @@
 
 <script>
     const currentLang = localStorage.getItem('simbio_lang') || 'it';
-    const API_KEY = localStorage.getItem('simbio_token') || '<YOUR_SIMBIO_API_KEY>';
+    const INJECTED_KEY = "{{SIMBIO_INJECTED_TOKEN}}";
+    const API_KEY = (INJECTED_KEY && !INJECTED_KEY.startsWith("{{") && INJECTED_KEY !== "simbio_sec_default_change_me") ? INJECTED_KEY : (localStorage.getItem('simbio_token') || '');
     const API_BASE_URL = window.location.origin;
 
     const HW_I18N = {

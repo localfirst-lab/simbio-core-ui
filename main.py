@@ -103,41 +103,35 @@ async def serve_manifest():
 # -------------------------------------------------------------
 # ROTTE WEB UI (Mobile PWA & Browser)
 # -------------------------------------------------------------
+def render_template(file_path: Path) -> HTMLResponse:
+    """Carica il template e inietta la chiave API configurata sul server (.env)."""
+    if not file_path.exists():
+        return HTMLResponse("<h1>Template non trovato</h1>", status_code=404)
+    content = file_path.read_text(encoding="utf-8")
+    injected_token = getattr(config, "SIMBIO_API_KEY", "")
+    content = content.replace("{{SIMBIO_INJECTED_TOKEN}}", injected_token)
+    return HTMLResponse(content, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
 @app.get("/", response_class=HTMLResponse, tags=["Web UI"])
 async def serve_index():
-    index_file = TEMPLATES_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
-    return HTMLResponse("<h1>Simbio UI in caricamento...</h1>")
+    return render_template(TEMPLATES_DIR / "index.html")
 
 @app.get("/hardware", response_class=HTMLResponse, tags=["Web UI"])
 async def serve_hardware():
-    hw_file = TEMPLATES_DIR / "hardware.html"
-    if hw_file.exists():
-        return FileResponse(hw_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
-    return HTMLResponse("<h1>Stato Hardware non trovato.</h1>")
+    return render_template(TEMPLATES_DIR / "hardware.html")
 
 @app.get("/console", response_class=HTMLResponse, tags=["Web UI"])
 async def serve_console():
-    console_file = TEMPLATES_DIR / "console.html"
-    if console_file.exists():
-        return FileResponse(console_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
-    return HTMLResponse("<h1>Console Terminale non trovata.</h1>")
+    return render_template(TEMPLATES_DIR / "console.html")
 
 @app.get("/orchestra", response_class=HTMLResponse, tags=["Web UI"])
 @app.get("/neural-map", response_class=HTMLResponse, tags=["Web UI"])
 async def serve_orchestra():
-    orch_file = TEMPLATES_DIR / "orchestra.html"
-    if orch_file.exists():
-        return FileResponse(orch_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
-    return HTMLResponse("<h1>Dashboard Orchestra non trovata.</h1>")
+    return render_template(TEMPLATES_DIR / "orchestra.html")
 
 @app.get("/security", response_class=HTMLResponse, tags=["Web UI"])
 async def serve_security():
-    sec_file = TEMPLATES_DIR / "security.html"
-    if sec_file.exists():
-        return FileResponse(sec_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
-    return HTMLResponse("<h1>Shield Sicurezza non trovato.</h1>")
+    return render_template(TEMPLATES_DIR / "security.html")
 
 @app.get("/health", tags=["Salute"])
 async def health_check():
